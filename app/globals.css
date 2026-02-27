@@ -5,6 +5,17 @@
   --foreground: #171717;
 }
 
+::selection {
+  background: #C4FF4D;
+  color: #1A1A1A;
+  text-shadow: 0 0 4px #C4FF4D;
+}
+
+::-moz-selection {
+  background: #C4FF4D;
+  color: #1A1A1A;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
