@@ -17,7 +17,7 @@ export const AuthService = {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   },
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   login: async (database: any, username: string, plainPassword: string) => {
     if (!database) throw new Error("DATABASE_OFFLINE");
 
@@ -50,7 +50,7 @@ export const AuthService = {
       role: userData.role || "operator",
     };
   },
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   register: async (database: any, username: string, plainPassword: string) => {
     if (!database) throw new Error("DATABASE_OFFLINE");
 

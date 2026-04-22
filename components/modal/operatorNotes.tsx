@@ -56,6 +56,7 @@ export default function OperatorNotesModal({ onClose }: OperatorNotesModalProps)
         {/* Close Button Pin */}
         <button 
           onClick={onClose}
+          aria-label="close modal"
           className="absolute -top-3 -right-3 bg-[#BA8CFF] text-[#1A1A1A] p-2 border-2 border-[#1A1A1A] shadow-[2px_2px_0px_0px_#C4FF4D] hover:scale-110 active:scale-95 transition-all"
         >
           <X size={16} strokeWidth={3} />
