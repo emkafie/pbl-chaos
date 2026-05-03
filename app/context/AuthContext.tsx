@@ -91,6 +91,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(userProfile);
       localStorage.setItem("active_user", JSON.stringify(userProfile));
 
+      // Refresh users list to update login times
+      await refreshUsers();
+
       // Set session cookie for middleware if needed
       document.cookie = "user_session=true; path=/;";
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
