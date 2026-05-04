@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
 import Y2KCard from "@/components/ui/Y2KCard";
 import Header from "@/components/layout/Header";
+import { auth } from "@/app/lib/firebase";
 import { ParkingSlot } from "@/types";
 import SlotGrid from "@/components/parking/SlotGrid";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -13,6 +14,9 @@ import AnalyticsTab from "@/components/admin/analyticsTab";
 import UserManagerTab from "@/components/admin/userManager";
 import OperatorNotesModal from "@/components/modal/operatorNotes";
 import RecentStatus from "@/components/parking/recentStatus";
+import { onAuthStateChanged, signInAnonymously } from "firebase/auth";
+import { db, appId } from "@/app/lib/firebase";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 
 export default function DashboardPage() {
   const { user: authUser, loading: authLoading, signOut } = useAuth();
@@ -20,18 +24,28 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [parkingSlots] = useState<ParkingSlot[]>([
-    { id: "A01", status: "available" },
-    { id: "A02", status: "occupied" },
-    { id: "A03", status: "available" },
-    { id: "A04", status: "available" },
-    { id: "B01", status: "occupied" },
-    { id: "B02", status: "available" },
-    { id: "B03", status: "occupied" },
-    { id: "B04", status: "occupied" },
-    { id: "C01", status: "available" },
-    { id: "C02", status: "available" },
-  ]);
+  const [parkingSlots, setParkingSlots] = useState<ParkingSlot[]>([]);
+
+  // Fetch real-time data from Firestore
+  useEffect(() => {
+    if (!appId) return;
+    const slotsRef = collection(db, `artifacts/${appId}/public/data/slots`);
+    const q = query(slotsRef, orderBy('id'));
+    const unsubscribeSlots = onSnapshot(q, (snapshot) => {
+      const slotsData: ParkingSlot[] = [];
+      snapshot.forEach((doc) => {
+        slotsData.push(doc.data() as ParkingSlot);
+      });
+      setParkingSlots(slotsData);
+    });
+
+    return () => unsubscribeSlots();
+  }, []);
+
+  // Calculate stats
+  const totalSlots = parkingSlots.length;
+  const availableSlots = parkingSlots.filter(s => s.status === 'available').length;
+  const occupiedSlots = parkingSlots.filter(s => s.status === 'occupied').length;
 
   useEffect(() => {
     if (!authLoading && !authUser) {
@@ -83,13 +97,17 @@ export default function DashboardPage() {
                 <OverviewTab
                   role={userProfile.role}
                   onOpenModal={() => setIsModalOpen(true)}
+                  totalSlots={totalSlots}
+                  availableSlots={availableSlots}
                 />
               )}
               <div className="space-y-8">
                   {!isAdmin && (
                     <OverviewTab
-                    role={userProfile.role}
-                    onOpenModal={() => setIsModalOpen(true)}
+                      role={userProfile.role}
+                      onOpenModal={() => setIsModalOpen(true)}
+                      totalSlots={totalSlots}
+                      availableSlots={availableSlots}
                     />
                   )}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -112,7 +130,11 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </Y2KCard>
-                  <RecentStatus />
+                  <RecentStatus 
+                    totalSlots={totalSlots}
+                    availableSlots={availableSlots}
+                    occupiedSlots={occupiedSlots}
+                  />
                 </div>
                   {isAdmin && <AnalyticsTab />}
               </div>
