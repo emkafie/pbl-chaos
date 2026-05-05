@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { Menu, X } from "lucide-react";
 
 interface HeaderProps {
@@ -19,21 +19,22 @@ const Header: React.FC<HeaderProps> = ({
   userProfile,
 }) => {
   return (
-    <header className="h-20 border-b-4 border-[#4D4D4D] flex items-center justify-between px-8 bg-[#1A1A1A]">
-      <div className="flex items-center gap-4">
+    <header className="h-16 sm:h-20 border-b-4 border-[#4D4D4D] flex items-center justify-between px-4 sm:px-8 bg-[#1A1A1A] flex-shrink-0">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 border-2 border-[#C4FF4D] text-[#C4FF4D] hover:bg-[#C4FF4D] hover:text-[#1A1A1A] transition-all"
+          className="p-2 border-2 border-[#C4FF4D] text-[#C4FF4D] hover:bg-[#C4FF4D] hover:text-[#1A1A1A] transition-all flex-shrink-0"
+          aria-label="Toggle sidebar"
         >
-          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
-        <h2 className="text-[#C4FF4D] font-black text-xl uppercase italic tracking-tighter">
+        <h2 className="text-[#C4FF4D] font-black text-sm sm:text-xl uppercase italic tracking-tighter truncate">
           {title}
         </h2>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="hidden md:block text-right font-mono">
+      <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+        <div className="hidden sm:block text-right font-mono">
           <p className="text-[10px] text-[#BA8CFF] font-bold uppercase tracking-widest">
             {userProfile?.role || "Unknown Role"}_access
           </p>
@@ -41,8 +42,11 @@ const Header: React.FC<HeaderProps> = ({
             {userProfile?.username || "Unknown User"}
           </p>
         </div>
-        <div className="w-10 h-10 bg-[#BA8CFF] border-2 border-[#1A1A1A] shadow-[2px_2px_0px_0px_#C4FF4D] flex items-center justify-center rounded-full text-[#1A1A1A] font-bold uppercase">
-            {userProfile?.username ? userProfile.username.charAt(0).toUpperCase() : "?"}
+        <div
+          title={userProfile?.username}
+          className="w-9 h-9 sm:w-10 sm:h-10 bg-[#BA8CFF] border-2 border-[#1A1A1A] shadow-[2px_2px_0px_0px_#C4FF4D] flex items-center justify-center rounded-full text-[#1A1A1A] font-bold uppercase text-sm"
+        >
+          {userProfile?.username ? userProfile.username.charAt(0).toUpperCase() : "?"}
         </div>
       </div>
     </header>

@@ -4,7 +4,7 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db, appId } from "@/app/lib/firebase";
 import { ParkingSession } from "@/types";
 import { TrendCharts } from "@/components/analytics/TrandCharts";
-import { BarChart3, TrendingUp, DollarSign, Clock, LayoutDashboard } from "lucide-react";
+import { BarChart3, TrendingUp, DollarSign, Clock } from "lucide-react";
 
 export default function AnalyticsPage() {
   const [sessions, setSessions] = useState<ParkingSession[]>([]);
@@ -77,25 +77,26 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#1A1A1A] text-[#C4FF4D] font-mono">
+      <div className="flex items-center justify-center py-20 text-[#C4FF4D] font-mono">
         <div className="animate-pulse">INGESTING_BIG_DATA...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 space-y-10 animate-in fade-in duration-700">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[#C4FF4D] text-3xl font-black italic uppercase tracking-tighter flex items-center gap-3">
-          <BarChart3 size={32} /> Big_Data_Analytics
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 md:space-y-10 animate-in fade-in duration-700">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+        <h1 className="text-[#C4FF4D] text-2xl sm:text-3xl font-black italic uppercase tracking-tighter flex items-center gap-3">
+          <BarChart3 size={28} className="flex-shrink-0" /> Big_Data_Analytics
         </h1>
-        <div className="bg-[#BA8CFF] text-[#1A1A1A] px-4 py-1 text-[10px] font-black uppercase shadow-[3px_3px_0px_0px_#C4FF4D]">
+        <div className="bg-[#BA8CFF] text-[#1A1A1A] px-4 py-1 text-[10px] font-black uppercase shadow-[3px_3px_0px_0px_#C4FF4D] self-start sm:self-auto">
           Sample_Size: {sessions.length} Records
         </div>
       </div>
 
       {/* Ringkasan Statistik */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         <SummaryCard 
           label="Total Revenue" 
           value={`Rp ${processedData.totalRevenue.toLocaleString()}`} 
@@ -123,11 +124,11 @@ export default function AnalyticsPage() {
 }
 
 const SummaryCard = ({ label, value, icon, color }: any) => (
-  <div className="bg-[#1A1A1A] border-4 p-6 shadow-[5px_5px_0px_0px_#000]" style={{ borderColor: color }}>
+  <div className="bg-[#1A1A1A] border-4 p-4 sm:p-6 shadow-[5px_5px_0px_0px_#000]" style={{ borderColor: color }}>
     <div className="flex justify-between items-center opacity-70 mb-2">
       <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color }}>{label}</span>
       <div style={{ color }}>{icon}</div>
     </div>
-    <div className="text-3xl font-black italic">{value}</div>
+    <div className="text-2xl sm:text-3xl font-black italic break-all">{value}</div>
   </div>
 );

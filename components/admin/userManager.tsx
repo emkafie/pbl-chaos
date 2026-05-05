@@ -39,12 +39,9 @@ const UserManagerTab = () => {
       setActionError(null);
       try {
         if (editingUser) {
-          // Update user - only update username, do NOT change role
           await UserService.updateUser(db, editingUser.id, {
             username: formData.username,
           });
-
-          // Update password jika ada input password baru
           if (formData.password) {
             await UserService.updateUserPassword(
               db,
@@ -53,7 +50,6 @@ const UserManagerTab = () => {
             );
           }
         } else {
-          // Create new user
           await UserService.createUser(
             db,
             formData.username,
@@ -61,8 +57,6 @@ const UserManagerTab = () => {
             formData.role,
           );
         }
-
-        // Refresh user list
         await refreshUsers();
         handleCloseModal();
       } catch (error) {
@@ -111,10 +105,18 @@ const UserManagerTab = () => {
     }
   };
 
+  const roleClass = (role: string) =>
+    role === "admin"
+      ? "border-[#BA8CFF] text-[#BA8CFF]"
+      : role === "operator"
+      ? "border-[#C4FF4D] text-[#C4FF4D]"
+      : "border-gray-500 text-gray-500";
+
   return (
     <>
       <Y2KCard title="Node_Operators_Directory" variant="purple">
-        <div className="mb-6 flex justify-between items-center">
+        {/* Toolbar */}
+        <div className="mb-6 flex flex-wrap justify-between items-center gap-3">
           <p className="text-[10px] text-gray-500 font-bold uppercase italic tracking-widest">
             Active System Accounts
           </p>
@@ -149,87 +151,154 @@ const UserManagerTab = () => {
           </div>
         )}
 
-        {/* Table */}
         {!usersLoading && users.length > 0 && (
-          <div className="overflow-x-auto border-2 border-[#4D4D4D]">
-            <table className="w-full text-left text-[11px] font-bold">
-              <thead className="bg-[#4D4D4D]/20 border-b-2 border-[#4D4D4D]">
-                <tr className="uppercase text-[#BA8CFF] italic">
-                  <th className="p-4">User_Identity</th>
-                  <th className="p-4">Access_Role</th>
-                  <th className="p-4">Created_At</th>
-                  <th className="p-4">Last_Session</th>
-                  <th className="p-4 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#4D4D4D]">
-                {users.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="hover:bg-[#C4FF4D]/5 transition-colors"
-                  >
-                    <td className="p-4 text-[#C4FF4D]">{user.username}</td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-0.5 border-2 uppercase text-[9px] ${
-                          user.role === "admin"
-                            ? "border-[#BA8CFF] text-[#BA8CFF]"
-                            : user.role === "operator"
-                              ? "border-[#C4FF4D] text-[#C4FF4D]"
-                              : "border-gray-500 text-gray-500"
-                        }`}
-                      >
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="p-4 text-gray-400 text-[10px]">
-                      {formatDate(user.created_at)}
-                    </td>
-                    <td className="p-4 text-gray-400 text-[10px]">
-                      {formatDate(user.last_login)}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex justify-center gap-3">
+          <>
+            {/* ── MOBILE: Card list (hidden on md+) ──────────────── */}
+            <div className="block md:hidden space-y-3">
+              {users.map((user) => (
+                <div
+                  key={user.id}
+                  className="border-2 border-[#4D4D4D] bg-[#4D4D4D]/10 p-4 space-y-3"
+                >
+                  {/* Identity + role */}
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[#C4FF4D] font-black text-sm truncate">
+                      {user.username}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 border-2 uppercase text-[9px] font-bold flex-shrink-0 ${roleClass(user.role)}`}
+                    >
+                      {user.role}
+                    </span>
+                  </div>
+
+                  {/* Dates */}
+                  <div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-gray-400">
+                    <div>
+                      <p className="text-[#BA8CFF] uppercase text-[9px] mb-0.5">Created</p>
+                      <p>{formatDate(user.created_at)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#BA8CFF] uppercase text-[9px] mb-0.5">Last Session</p>
+                      <p>{formatDate(user.last_login)}</p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-4 pt-1 border-t border-[#4D4D4D]">
+                    <button
+                      onClick={() => handleOpenModal(user)}
+                      disabled={actionLoading}
+                      className="text-blue-400 hover:text-blue-300 flex items-center gap-1 text-[11px] font-bold disabled:opacity-50"
+                    >
+                      <Edit2 size={12} /> Edit
+                    </button>
+                    {deleteConfirm === user.id ? (
+                      <div className="flex gap-3 text-[11px] font-bold">
                         <button
-                          onClick={() => handleOpenModal(user)}
+                          onClick={() => handleDeleteUser(user.id)}
                           disabled={actionLoading}
-                          className="text-blue-400 hover:text-blue-300 flex items-center gap-1 disabled:opacity-50"
+                          className="text-red-400 hover:text-red-300 disabled:opacity-50"
                         >
-                          <Edit2 size={12} /> Edit
+                          Confirm
                         </button>
-                        {deleteConfirm === user.id ? (
-                          <div className="flex gap-2 text-[10px]">
-                            <button
-                              onClick={() => handleDeleteUser(user.id)}
-                              disabled={actionLoading}
-                              className="text-red-400 hover:text-red-300 font-bold disabled:opacity-50"
-                            >
-                              Confirm
-                            </button>
-                            <button
-                              onClick={() => setDeleteConfirm(null)}
-                              disabled={actionLoading}
-                              className="text-gray-400 hover:text-gray-300 font-bold disabled:opacity-50"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => setDeleteConfirm(user.id)}
-                            disabled={actionLoading}
-                            className="text-red-500 hover:text-red-400 flex items-center gap-1 disabled:opacity-50"
-                          >
-                            <Trash2 size={12} /> Delete
-                          </button>
-                        )}
+                        <button
+                          onClick={() => setDeleteConfirm(null)}
+                          disabled={actionLoading}
+                          className="text-gray-400 hover:text-gray-300 disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
                       </div>
-                    </td>
+                    ) : (
+                      <button
+                        onClick={() => setDeleteConfirm(user.id)}
+                        disabled={actionLoading}
+                        className="text-red-500 hover:text-red-400 flex items-center gap-1 text-[11px] font-bold disabled:opacity-50"
+                      >
+                        <Trash2 size={12} /> Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ── DESKTOP: Table (hidden below md) ───────────────── */}
+            <div className="hidden md:block overflow-x-auto border-2 border-[#4D4D4D]">
+              <table className="w-full text-left text-[11px] font-bold">
+                <thead className="bg-[#4D4D4D]/20 border-b-2 border-[#4D4D4D]">
+                  <tr className="uppercase text-[#BA8CFF] italic">
+                    <th className="p-4">User_Identity</th>
+                    <th className="p-4">Access_Role</th>
+                    <th className="p-4">Created_At</th>
+                    <th className="p-4">Last_Session</th>
+                    <th className="p-4 text-center">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-[#4D4D4D]">
+                  {users.map((user) => (
+                    <tr
+                      key={user.id}
+                      className="hover:bg-[#C4FF4D]/5 transition-colors"
+                    >
+                      <td className="p-4 text-[#C4FF4D]">{user.username}</td>
+                      <td className="p-4">
+                        <span
+                          className={`px-2 py-0.5 border-2 uppercase text-[9px] ${roleClass(user.role)}`}
+                        >
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="p-4 text-gray-400 text-[10px]">
+                        {formatDate(user.created_at)}
+                      </td>
+                      <td className="p-4 text-gray-400 text-[10px]">
+                        {formatDate(user.last_login)}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex justify-center gap-3">
+                          <button
+                            onClick={() => handleOpenModal(user)}
+                            disabled={actionLoading}
+                            className="text-blue-400 hover:text-blue-300 flex items-center gap-1 disabled:opacity-50"
+                          >
+                            <Edit2 size={12} /> Edit
+                          </button>
+                          {deleteConfirm === user.id ? (
+                            <div className="flex gap-2 text-[10px]">
+                              <button
+                                onClick={() => handleDeleteUser(user.id)}
+                                disabled={actionLoading}
+                                className="text-red-400 hover:text-red-300 font-bold disabled:opacity-50"
+                              >
+                                Confirm
+                              </button>
+                              <button
+                                onClick={() => setDeleteConfirm(null)}
+                                disabled={actionLoading}
+                                className="text-gray-400 hover:text-gray-300 font-bold disabled:opacity-50"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setDeleteConfirm(user.id)}
+                              disabled={actionLoading}
+                              className="text-red-500 hover:text-red-400 flex items-center gap-1 disabled:opacity-50"
+                            >
+                              <Trash2 size={12} /> Delete
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </Y2KCard>
 
