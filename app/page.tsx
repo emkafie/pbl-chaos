@@ -18,28 +18,12 @@ import Y2KButton from "@/components/ui/Y2KButton";
 import FeatureCard from "@/components/ui/FeatureCard";
 import SlotGrid from "@/components/parking/SlotGrid";
 import { ParkingSlot } from "@/types";
-import { db, appId } from "@/app/lib/firebase";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { useParkingSlots } from "@/app/lib/useParkingSlots";
 
 export default function App() {
   const [glitch, setGlitch] = useState(false);
-  const [parkingSlots, setParkingSlots] = useState<ParkingSlot[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    if (!appId) return;
-    const slotsRef = collection(db, "parking_slots");
-    const q = query(slotsRef, orderBy('id'));
-    const unsubscribeSlots = onSnapshot(q, (snapshot) => {
-      const slotsData: ParkingSlot[] = [];
-      snapshot.forEach((doc) => {
-        slotsData.push(doc.data() as ParkingSlot);
-      });
-      setParkingSlots(slotsData);
-    });
-
-    return () => unsubscribeSlots();
-  }, []);
+  const { slots, totalSlots, availableSlots, occupiedSlots, occupancyRate } = useParkingSlots();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -182,7 +166,7 @@ export default function App() {
             <p className="text-[#BA8CFF] animate-pulse">{">"} LISTENING FOR INCOMING DATA STREAM_</p>
             
             <div className="mt-4">
-              <SlotGrid slots={parkingSlots} />
+              <SlotGrid slots={slots} totalSlots={totalSlots} availableSlots={availableSlots} occupiedSlots={occupiedSlots} occupancyRate={occupancyRate} />
             </div>
 
           </div>

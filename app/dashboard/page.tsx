@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
 import Y2KCard from "@/components/ui/Y2KCard";
 import Header from "@/components/layout/Header";
-import { auth } from "@/app/lib/firebase";
 import { ParkingSlot, UserProfile } from "@/types";
 import SlotGrid from "@/components/parking/SlotGrid";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -13,11 +12,10 @@ import { useAuth } from "@/app/context/AuthContext";
 import AnalyticsTab from "@/components/admin/analyticsTab";
 import UserManagerTab from "@/components/admin/userManager";
 import OperatorNotesModal from "@/components/modal/operatorNotes";
-import RecentStatus from "@/components/parking/recentStatus";
 import ProfileTab from "@/components/profile/ProfileTab";
 import SettingsTab from "@/components/profile/SettingsTab";
-import { db, appId } from "@/app/lib/firebase";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { useParkingSlots } from "@/app/lib/useParkingSlots";
+import { RecentLogin } from "@/components/parking/recentLogin";
 
 export default function DashboardPage() {
   const { user: authUser, loading: authLoading, signOut } = useAuth();
@@ -26,8 +24,15 @@ export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [parkingSlots, setParkingSlots] = useState<ParkingSlot[]>([]);
+  const {
+    slots,
+    loading,
+    error,
+    totalSlots,
+    availableSlots,
+    occupiedSlots,
+    occupancyRate,
+  } = useParkingSlots();
 
   // Local user profile state to allow updates from settings
   const [localUserProfile, setLocalUserProfile] = useState<UserProfile | null>(
@@ -49,31 +54,6 @@ export default function DashboardPage() {
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
-
-  // Fetch real-time data from Firestore
-  useEffect(() => {
-    if (!appId) return;
-    const slotsRef = collection(db, "parking_slots");
-    const q = query(slotsRef, orderBy("id"));
-    const unsubscribeSlots = onSnapshot(q, (snapshot) => {
-      const slotsData: ParkingSlot[] = [];
-      snapshot.forEach((doc) => {
-        slotsData.push(doc.data() as ParkingSlot);
-      });
-      setParkingSlots(slotsData);
-    });
-
-    return () => unsubscribeSlots();
-  }, []);
-
-  // Calculate stats
-  const totalSlots = parkingSlots.length;
-  const availableSlots = parkingSlots.filter(
-    (s) => s.status === "available",
-  ).length;
-  const occupiedSlots = parkingSlots.filter(
-    (s) => s.status === "occupied",
-  ).length;
 
   useEffect(() => {
     if (!authLoading && !authUser) {
@@ -163,13 +143,19 @@ export default function DashboardPage() {
                     availableSlots={availableSlots}
                   />
                 )}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mt-5">
                   <Y2KCard
                     title="Live_Parking_Grid"
                     icon={MapPin}
                     className="lg:col-span-2"
                   >
-                    <SlotGrid slots={parkingSlots} />
+                    <SlotGrid
+                      slots={slots}
+                      totalSlots={totalSlots}
+                      availableSlots={availableSlots}
+                      occupiedSlots={occupiedSlots}
+                      occupancyRate={occupancyRate}
+                    />
 
                     <div className="mt-6 sm:mt-8 bg-[#4D4D4D]/20 p-3 sm:p-4 border-l-4 border-[#C4FF4D] flex flex-col gap-2">
                       <div className="flex items-center gap-3 text-[10px] font-bold">
@@ -183,11 +169,9 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </Y2KCard>
-                  <RecentStatus
-                    totalSlots={totalSlots}
-                    availableSlots={availableSlots}
-                    occupiedSlots={occupiedSlots}
-                  />
+                  <div className="lg:col-span-1">
+                  {isAdmin && <RecentLogin role={userProfile.role}/>}
+                  </div>
                 </div>
                 {isAdmin && <AnalyticsTab />}
               </div>
@@ -201,7 +185,13 @@ export default function DashboardPage() {
           {activeTab === "map" && (
             <div>
               <Y2KCard title="Live_Parking_Grid" icon={MapPin}>
-                <SlotGrid slots={parkingSlots} />
+                <SlotGrid
+                  slots={slots}
+                  totalSlots={totalSlots}
+                  availableSlots={availableSlots}
+                  occupiedSlots={occupiedSlots}
+                  occupancyRate={occupancyRate}
+                />
 
                 <div className="mt-6 sm:mt-8 bg-[#4D4D4D]/20 p-3 sm:p-4 border-l-4 border-[#C4FF4D] flex flex-col gap-2">
                   <div className="flex items-center gap-3 text-[10px] font-bold">
