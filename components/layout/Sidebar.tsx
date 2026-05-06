@@ -53,7 +53,9 @@ export const Sidebar = ({
   const handleNavClick = (tab: string) => {
     setActiveTab(tab);
     // Close the drawer on mobile after selecting a tab
-    if (onClose) onClose();
+    if (window.innerWidth < 1024) {
+      onClose?.();
+    }
   };
 
   return (
@@ -72,7 +74,7 @@ export const Sidebar = ({
         className={`
           fixed md:relative inset-y-0 left-0 z-50
           bg-[#1A1A1A] border-r-4 border-[#4D4D4D]
-          transition-all duration-300 flex-shrink-0
+          transition-all duration-300 shrink-0
           ${isOpen
             ? "w-64 translate-x-0"
             : "w-64 -translate-x-full md:w-20 md:translate-x-0"

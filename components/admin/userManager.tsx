@@ -166,7 +166,7 @@ const UserManagerTab = () => {
                       {user.username}
                     </span>
                     <span
-                      className={`px-2 py-0.5 border-2 uppercase text-[9px] font-bold flex-shrink-0 ${roleClass(user.role)}`}
+                      className={`px-2 py-0.5 border-2 uppercase text-[9px] font-bold shrink-0 ${roleClass(user.role)}`}
                     >
                       {user.role}
                     </span>
