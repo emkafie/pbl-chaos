@@ -4,7 +4,7 @@ import { MapPin } from "lucide-react";
 import Y2KCard from "@/components/ui/Y2KCard";
 import Header from "@/components/layout/Header";
 import { auth } from "@/app/lib/firebase";
-import { ParkingSlot } from "@/types";
+import { ParkingSlot, UserProfile } from "@/types";
 import SlotGrid from "@/components/parking/SlotGrid";
 import { Sidebar } from "@/components/layout/Sidebar";
 import OverviewTab from "../../components/parking/overview";
@@ -14,6 +14,8 @@ import AnalyticsTab from "@/components/admin/analyticsTab";
 import UserManagerTab from "@/components/admin/userManager";
 import OperatorNotesModal from "@/components/modal/operatorNotes";
 import RecentStatus from "@/components/parking/recentStatus";
+import ProfileTab from "@/components/layout/ProfileTab";
+import SettingsTab from "@/components/layout/SettingsTab";
 import { db, appId } from "@/app/lib/firebase";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 
@@ -26,6 +28,16 @@ export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [parkingSlots, setParkingSlots] = useState<ParkingSlot[]>([]);
+
+  // Local user profile state to allow updates from settings
+  const [localUserProfile, setLocalUserProfile] = useState<UserProfile | null>(null);
+
+  // Sync local profile with auth user
+  useEffect(() => {
+    if (authUser) {
+      setLocalUserProfile(authUser);
+    }
+  }, [authUser]);
 
   // On desktop, open sidebar by default once mounted
   useEffect(() => {
@@ -68,7 +80,20 @@ export default function DashboardPage() {
     window.location.href = "/";
   };
 
-  if (authLoading || !authUser) {
+  const handleNavigate = (tab: string) => {
+    setActiveTab(tab);
+  };
+
+  const handleProfileUpdate = (updated: Partial<UserProfile>) => {
+    if (localUserProfile) {
+      const updatedProfile = { ...localUserProfile, ...updated };
+      setLocalUserProfile(updatedProfile);
+      // Also update localStorage so the change persists across refreshes
+      localStorage.setItem("active_user", JSON.stringify(updatedProfile));
+    }
+  };
+
+  if (authLoading || !authUser || !localUserProfile) {
     return (
       <div className="min-h-screen bg-[#1A1A1A] flex items-center justify-center font-mono text-[#C4FF4D]">
         INITIALIZING_SESSION...
@@ -76,8 +101,21 @@ export default function DashboardPage() {
     );
   }
 
-  const userProfile = authUser;
+  const userProfile = localUserProfile;
   const isAdmin = userProfile.role === "admin";
+
+  const getHeaderTitle = () => {
+    switch (activeTab) {
+      case "overview":
+        return "DASHBOARD_OVERVIEW";
+      case "profile":
+        return "USER_PROFILE";
+      case "settings":
+        return "USER_SETTINGS";
+      default:
+        return activeTab.toUpperCase() + "_MODULE";
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#1A1A1A] text-white font-mono flex overflow-hidden">
@@ -93,12 +131,10 @@ export default function DashboardPage() {
         <Header
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
-          title={
-            activeTab === "overview"
-              ? "DASHBOARD_OVERVIEW"
-              : activeTab.toUpperCase() + "_MODULE"
-          }
+          title={getHeaderTitle()}
           userProfile={userProfile}
+          onNavigate={handleNavigate}
+          onLogout={handleLogout}
         />
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
@@ -183,6 +219,19 @@ export default function DashboardPage() {
           {activeTab === "users" && <div>{isAdmin && <UserManagerTab />}</div>}
           {activeTab === "config" && (
             <div>{isAdmin && <div>IoT Config Content</div>}</div>
+          )}
+
+          {/* Profile Tab */}
+          {activeTab === "profile" && (
+            <ProfileTab userProfile={userProfile} />
+          )}
+
+          {/* Settings Tab */}
+          {activeTab === "settings" && (
+            <SettingsTab
+              userProfile={userProfile}
+              onProfileUpdate={handleProfileUpdate}
+            />
           )}
         </div>
 

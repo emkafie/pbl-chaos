@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { Menu, X } from "lucide-react";
+import AvatarDropdown from "./AvatarDropdown";
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -9,7 +10,10 @@ interface HeaderProps {
   userProfile?: {
     username: string;
     role: string;
+    profilePicture?: string;
   };
+  onNavigate: (tab: string) => void;
+  onLogout: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -17,6 +21,8 @@ const Header: React.FC<HeaderProps> = ({
   setSidebarOpen,
   title,
   userProfile,
+  onNavigate,
+  onLogout,
 }) => {
   return (
     <header className="h-16 sm:h-20 border-b-4 border-[#4D4D4D] flex items-center justify-between px-4 sm:px-8 bg-[#1A1A1A] flex-shrink-0">
@@ -34,20 +40,13 @@ const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
-        <div className="hidden sm:block text-right font-mono">
-          <p className="text-[10px] text-[#BA8CFF] font-bold uppercase tracking-widest">
-            {userProfile?.role || "Unknown Role"}_access
-          </p>
-          <p className="text-sm font-black underline decoration-[#C4FF4D]">
-            {userProfile?.username || "Unknown User"}
-          </p>
-        </div>
-        <div
-          title={userProfile?.username}
-          className="w-9 h-9 sm:w-10 sm:h-10 bg-[#BA8CFF] border-2 border-[#1A1A1A] shadow-[2px_2px_0px_0px_#C4FF4D] flex items-center justify-center rounded-full text-[#1A1A1A] font-bold uppercase text-sm"
-        >
-          {userProfile?.username ? userProfile.username.charAt(0).toUpperCase() : "?"}
-        </div>
+        {userProfile && (
+          <AvatarDropdown
+            userProfile={userProfile}
+            onNavigate={onNavigate}
+            onLogout={onLogout}
+          />
+        )}
       </div>
     </header>
   );
