@@ -1,51 +1,70 @@
-import { useState, useEffect } from "react";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { useState, useEffect, useCallback } from "react";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
 import { ParkingSlot } from "@/types";
 
 /**
- * Custom Hook untuk mengambil data slot parkir secara real-time.
- * Memisahkan logika sinkronisasi data dari komponen UI.
+ * useParkingSlots
+ * ---------------
+ * Fetches parking slot data from Firestore with a single one-time read (getDocs).
+ *
+ * ❌ REMOVED: onSnapshot live listener — was keeping a persistent WebSocket open
+ *             and billing a Firestore read for every IoT write to any slot doc.
+ *
+ * ✅ NOW: One getDocs on mount + explicit refresh() function exposed to the UI.
+ *         Slots only have 12 documents (A01–C04), so this is cheap even when
+ *         re-fetched manually.
  */
 export const useParkingSlots = () => {
   const [slots, setSlots] = useState<ParkingSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchSlots = useCallback(async () => {
     if (!db) return;
+    setLoading(true);
+    setError(null);
 
-    const slotsRef = collection(db, "parking_slots");
-    const q = query(slotsRef, orderBy("id"));
+    try {
+      const slotsRef = collection(db, "parking_slots");
+      const q = query(slotsRef, orderBy("id"));
+      const snapshot = await getDocs(q);
 
-    // Menjalankan onSnapshot (Live Listener)
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const slotsData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as ParkingSlot[];
+      const slotsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as ParkingSlot[];
 
-        setSlots(slotsData);
-        setLoading(false);
-      },
-      (err) => {
-        console.error("Firestore Sync Error:", err);
-        setError("Gagal menyinkronkan data dari cloud.");
-        setLoading(false);
-      }
-    );
-
-    // Cleanup listener saat komponen tidak digunakan
-    return () => unsubscribe();
+      setSlots(slotsData);
+    } catch (err) {
+      console.error("Firestore getDocs Error (parking_slots):", err);
+      setError("Gagal mengambil data slot parkir.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Stats dihitung langsung dari state slots — otomatis update setiap kali slots berubah
+  // Single read on mount — no persistent listener
+  useEffect(() => {
+    fetchSlots();
+  }, [fetchSlots]);
+
+  // Stats derived from state — recalculated only when slots changes
   const totalSlots = slots.length;
   const availableSlots = slots.filter((s) => s.status === "available").length;
   const occupiedSlots = slots.filter((s) => s.status === "occupied").length;
-  const occupancyRate = totalSlots > 0 ? (occupiedSlots / totalSlots) * 100 : 0;
+  const occupancyRate =
+    totalSlots > 0 ? (occupiedSlots / totalSlots) * 100 : 0;
 
-  return { slots, loading, error, totalSlots, availableSlots, occupiedSlots, occupancyRate };
+  return {
+    slots,
+    loading,
+    error,
+    totalSlots,
+    availableSlots,
+    occupiedSlots,
+    occupancyRate,
+    /** Call this to manually re-fetch slot data from Firestore */
+    refresh: fetchSlots,
+  };
 };

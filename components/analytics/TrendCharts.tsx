@@ -106,7 +106,7 @@ export const TrendCharts = ({ hourlyData, dailyRevenue }: Props) => {
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#4D4D4D" vertical={false} />
               <XAxis 
-                dataKey="date" 
+                dataKey="label" 
                 stroke="#888" 
                 fontSize={10} 
                 tickLine={false} 

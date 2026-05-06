@@ -173,7 +173,7 @@ export default function DashboardPage() {
                   {isAdmin && <RecentLogin role={userProfile.role}/>}
                   </div>
                 </div>
-                {isAdmin && <AnalyticsTab />}
+                {/* Analytics moved to its own tab — removed duplicate here */}
               </div>
             </>
           )}

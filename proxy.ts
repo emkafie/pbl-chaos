@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// Menggunakan server-side Next.js Middleware (berjalan di Edge Runtime)
-export function middleware(request: NextRequest) {
-  // Mengecek apakah cookie 'user_session' ada (yang diset saat login)
+// Next.js 16+: renamed from `middleware` to `proxy`
+export function proxy(request: NextRequest) {
   const hasSession = request.cookies.has('user_session');
   const isDashboardRoute = request.nextUrl.pathname.startsWith('/dashboard');
   const isRootRoute = request.nextUrl.pathname === '/';
@@ -18,11 +17,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // Lanjut seperti biasa jika tidak ada masalah
   return NextResponse.next();
 }
 
-// Menentukan rute mana saja yang akan dicegat oleh middleware ini
+// Menentukan rute mana saja yang akan dicegat
 export const config = {
-  matcher: ['/', '/dashboard/:path*'], // Middleware akan menyala jika url adalah / atau diawali dengan /dashboard
+  matcher: ['/', '/dashboard/:path*'],
 }

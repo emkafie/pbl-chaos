@@ -8,6 +8,8 @@ import {
   updateDoc,
   deleteDoc,
   where,
+  orderBy,
+  limit,
 } from "firebase/firestore";
 
 export interface UserData {
@@ -35,7 +37,8 @@ export const UserService = {
 
     try {
       const usersRef = collection(database, "users");
-      const q = query(usersRef);
+      // limit(100) caps reads — users collection is small but safety first
+      const q = query(usersRef, orderBy("created_at", "desc"), limit(100));
       const querySnapshot = await getDocs(q);
 
       const users: UserData[] = [];
