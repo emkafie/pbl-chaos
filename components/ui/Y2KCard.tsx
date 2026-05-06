@@ -6,6 +6,7 @@ interface Y2KCardProps {
   children: React.ReactNode;
   variant?: "purple" | "grey" | "lime";
   className?: string;
+  headerAction?: React.ReactNode;
 }
 
 const Y2KCard: React.FC<Y2KCardProps> = ({
@@ -14,6 +15,7 @@ const Y2KCard: React.FC<Y2KCardProps> = ({
   children,
   variant = "purple",
   className = "",
+  headerAction,
 }) => {
   const variants = {
     purple: "border-[#BA8CFF] shadow-[6px_6px_0px_0px_rgba(186,140,255,1)]",
@@ -30,6 +32,7 @@ const Y2KCard: React.FC<Y2KCardProps> = ({
           <h3 className="text-[#C4FF4D] font-black uppercase text-lg italic tracking-widest flex items-center gap-2">
             {Icon && <Icon size={20} />} {title}
           </h3>
+          {headerAction && <div>{headerAction}</div>}
         </div>
       )}
       {children}

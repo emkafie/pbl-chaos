@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
 import Y2KCard from "@/components/ui/Y2KCard";
 import Header from "@/components/layout/Header";
-import { ParkingSlot, UserProfile } from "@/types";
+import { UserProfile } from "@/types";
 import SlotGrid from "@/components/parking/SlotGrid";
+import LiveParkingCard from "@/components/parking/LiveParkingCard";
 import { Sidebar } from "@/components/layout/Sidebar";
 import OverviewTab from "../../components/parking/overview";
 
@@ -31,6 +32,7 @@ export default function DashboardPage() {
     totalSlots,
     availableSlots,
     occupiedSlots,
+    maintenanceSlots,
     occupancyRate,
   } = useParkingSlots();
 
@@ -154,6 +156,7 @@ export default function DashboardPage() {
                       totalSlots={totalSlots}
                       availableSlots={availableSlots}
                       occupiedSlots={occupiedSlots}
+                      maintenanceSlots={maintenanceSlots}
                       occupancyRate={occupancyRate}
                     />
 
@@ -183,29 +186,15 @@ export default function DashboardPage() {
           )}
 
           {activeTab === "map" && (
-            <div>
-              <Y2KCard title="Live_Parking_Grid" icon={MapPin}>
-                <SlotGrid
-                  slots={slots}
-                  totalSlots={totalSlots}
-                  availableSlots={availableSlots}
-                  occupiedSlots={occupiedSlots}
-                  occupancyRate={occupancyRate}
-                />
-
-                <div className="mt-6 sm:mt-8 bg-[#4D4D4D]/20 p-3 sm:p-4 border-l-4 border-[#C4FF4D] flex flex-col gap-2">
-                  <div className="flex items-center gap-3 text-[10px] font-bold">
-                    <div className="w-2 h-2 bg-[#C4FF4D] animate-pulse"></div>
-                    <span className="text-[#C4FF4D] uppercase italic">
-                      IoT_Stream: Node_A {" > "} Cloud_Gateway
-                    </span>
-                  </div>
-                  <div className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">
-                    Big_Data_Ingestion: Active
-                  </div>
-                </div>
-              </Y2KCard>
-            </div>
+            <LiveParkingCard
+              slots={slots}
+              totalSlots={totalSlots}
+              availableSlots={availableSlots}
+              occupiedSlots={occupiedSlots}
+              maintenanceSlots={maintenanceSlots}
+              occupancyRate={occupancyRate}
+              showEditControls={true}
+            />
           )}
           {activeTab === "users" && <div>{isAdmin && <UserManagerTab />}</div>}
           {activeTab === "config" && (
