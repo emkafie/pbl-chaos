@@ -84,7 +84,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const profile = await AuthService.login(db, username, password);
       const userProfile: UserProfile = {
-        ...profile,
+        id: profile.id,
+        username: profile.username,
+        email: profile.email || "",
+        role: profile.role,
+        profilePicture: profile.profilePicture || "",
         lastLogin: new Date().toISOString(),
       };
 

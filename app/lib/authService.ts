@@ -47,7 +47,9 @@ export const AuthService = {
     return {
       id: userDoc.id,
       username: userData.username,
+      email: userData.email || "",
       role: userData.role || "operator",
+      profilePicture: userData.profilePicture || "",
     };
   },
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -214,4 +214,46 @@ export const UserService = {
       throw new Error("DELETE_USER_FAILED");
     }
   },
+
+  // VERIFY: Verify current password for reauthentication
+  verifyPassword: async (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    database: any,
+    userId: string,
+    currentPassword: string,
+  ): Promise<boolean> => {
+    if (!database) throw new Error("DATABASE_OFFLINE");
+
+    try {
+      const userDoc = await getDoc(doc(database, "users", userId));
+      if (!userDoc.exists()) throw new Error("USER_NOT_FOUND");
+
+      const userData = userDoc.data();
+      const hashedPassword = await UserService.hashPassword(currentPassword);
+      return userData.password === hashedPassword;
+    } catch (error) {
+      console.error("Error verifying password:", error);
+      throw new Error("VERIFY_PASSWORD_FAILED");
+    }
+  },
+
+  // UPDATE: Update profile picture
+  updateProfilePicture: async (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    database: any,
+    userId: string,
+    profilePicture: string,
+  ): Promise<void> => {
+    if (!database) throw new Error("DATABASE_OFFLINE");
+
+    try {
+      const userRef = doc(database, "users", userId);
+      await updateDoc(userRef, {
+        profilePicture: profilePicture,
+      });
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+      throw new Error("UPDATE_PROFILE_PICTURE_FAILED");
+    }
+  },
 };

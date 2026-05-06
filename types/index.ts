@@ -2,8 +2,11 @@ export type SlotStatus = 'available' | 'occupied';
 export type UserRole = 'admin' | 'operator' | 'guest';
 
 export interface UserProfile {
+  id?: string;
   username: string;
+  email?: string;
   role: UserRole;
+  profilePicture?: string;
   lastLogin?: string;
 }
 
