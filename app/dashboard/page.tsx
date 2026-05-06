@@ -39,7 +39,7 @@ export default function DashboardPage() {
   // Fetch real-time data from Firestore
   useEffect(() => {
     if (!appId) return;
-    const slotsRef = collection(db, `artifacts/${appId}/public/data/slots`);
+    const slotsRef = collection(db, "parking_slots");
     const q = query(slotsRef, orderBy('id'));
     const unsubscribeSlots = onSnapshot(q, (snapshot) => {
       const slotsData: ParkingSlot[] = [];

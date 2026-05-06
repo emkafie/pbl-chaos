@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db, appId } from "@/app/lib/firebase";
 import { ParkingSession } from "@/types";
-import { TrendCharts } from "@/components/analytics/TrandCharts";
+import { TrendCharts } from "@/components/analytics/TrendCharts";
 import { BarChart3, TrendingUp, DollarSign, Clock } from "lucide-react";
 
 export default function AnalyticsPage() {
@@ -13,7 +13,7 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const sessionPath = `artifacts/${appId}/public/data/sessions`;
+        const sessionPath = "parking_sessions";
         const q = query(collection(db, sessionPath));
         const querySnapshot = await getDocs(q);
         
@@ -88,7 +88,7 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <h1 className="text-[#C4FF4D] text-2xl sm:text-3xl font-black italic uppercase tracking-tighter flex items-center gap-3">
-          <BarChart3 size={28} className="flex-shrink-0" /> Big_Data_Analytics
+          <BarChart3 size={28} className="shrink-0" /> Big_Data_Analytics
         </h1>
         <div className="bg-[#BA8CFF] text-[#1A1A1A] px-4 py-1 text-[10px] font-black uppercase shadow-[3px_3px_0px_0px_#C4FF4D] self-start sm:self-auto">
           Sample_Size: {sessions.length} Records
@@ -98,13 +98,13 @@ export default function AnalyticsPage() {
       {/* Ringkasan Statistik */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         <SummaryCard 
-          label="Total Revenue" 
+          label="Total Revenue"
           value={`Rp ${processedData.totalRevenue.toLocaleString()}`} 
           icon={<DollarSign size={20}/>} 
           color="#C4FF4D" 
         />
         <SummaryCard 
-          label="Avg Duration" 
+          label="Avg Duration"
           value={`${processedData.avgDuration} Mins`} 
           icon={<Clock size={20}/>} 
           color="#BA8CFF" 
