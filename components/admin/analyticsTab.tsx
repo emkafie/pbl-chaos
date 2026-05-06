@@ -84,7 +84,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 md:space-y-10 animate-in fade-in duration-700">
+    <div className="px-2 space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-700">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <h1 className="text-[#C4FF4D] text-2xl sm:text-3xl font-black italic uppercase tracking-tighter flex items-center gap-3">
