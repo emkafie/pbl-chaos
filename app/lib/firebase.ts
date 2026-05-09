@@ -17,7 +17,7 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-export const appId = firebaseConfig.appId; // Simpan appId untuk digunakan di seluruh aplikasi
+export const appId = firebaseConfig.appId;
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
