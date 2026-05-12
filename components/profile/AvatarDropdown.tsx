@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { User, Settings, LogOut, ChevronDown } from "lucide-react";
+import { User, Settings, LogOut, ChevronDown, Bell } from "lucide-react";
+import { useNotifications } from "@/app/lib/useNotifications";
 
 interface AvatarDropdownProps {
   userProfile: {
@@ -10,15 +11,23 @@ interface AvatarDropdownProps {
   };
   onNavigate: (tab: string) => void;
   onLogout: () => void;
+  onOpenNotifications?: () => void;
 }
 
 const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
   userProfile,
   onNavigate,
   onLogout,
+  onOpenNotifications,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Only subscribe for operators to get the unread count
+  const isOperator = userProfile.role === "operator";
+  const { unreadCount } = useNotifications({
+    role: (userProfile.role as "admin" | "operator") || "operator",
+  });
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -51,6 +60,15 @@ const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
         onNavigate("profile");
         setIsOpen(false);
       },
+    },
+    {
+      icon: <Bell size={14} />,
+      label: "Notifications",
+      action: () => {
+        onOpenNotifications?.();
+        setIsOpen(false);
+      },
+      badge: isOperator && unreadCount > 0 ? unreadCount : undefined,
     },
     {
       icon: <Settings size={14} />,
@@ -105,6 +123,13 @@ const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
                 : "?"}
             </div>
           )}
+
+          {/* Unread badge on avatar (operator only) */}
+          {isOperator && unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center bg-red-500 text-white text-[9px] font-black border border-[#1A1A1A] px-0.5 animate-pulse">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
         </div>
         <ChevronDown
           size={14}
@@ -134,7 +159,7 @@ const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
 
           {/* Menu items */}
           <div className="py-1">
-            {menuItems.map((item, index) => (
+            {menuItems.map((item) => (
               <React.Fragment key={item.label}>
                 {item.danger && (
                   <div className="mx-3 my-1 border-t border-[#4D4D4D]" />
@@ -149,7 +174,13 @@ const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
                   }`}
                 >
                   {item.icon}
-                  <span>{item.label}</span>
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {/* Unread badge next to "Notifications" */}
+                  {item.badge && (
+                    <span className="min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[9px] font-black px-1 border border-[#1A1A1A] shadow-[1px_1px_0px_0px_#BA8CFF]">
+                      {item.badge > 99 ? "99+" : item.badge}
+                    </span>
+                  )}
                 </button>
               </React.Fragment>
             ))}
