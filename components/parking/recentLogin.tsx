@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/app/context/AuthContext";
 import { UserRole } from "@/types";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Y2KCard from "../ui/Y2KCard";
 
 interface RecentLoginProps {
@@ -31,8 +31,16 @@ const formatRelativeTime = (isoString: string) => {
 };
 
 export const RecentLogin = ({ role }: RecentLoginProps) => {
-  const { users } = useAuth();
+  const { users, refreshUsers } = useAuth();
   const [showAllLogs, setShowAllLogs] = useState(false);
+
+  // Fetch users once when admin views this component — avoids boot-time reads
+  useEffect(() => {
+    if (role === "admin") {
+      refreshUsers();
+    }
+  }, [role]); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   const recentLogins = useMemo(
     () =>
