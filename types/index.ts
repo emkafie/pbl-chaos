@@ -1,4 +1,4 @@
-export type SlotStatus = 'available' | 'occupied';
+export type SlotStatus = 'available' | 'occupied' | 'maintenance';
 export type UserRole = 'admin' | 'operator' | 'guest';
 
 export interface UserProfile {
