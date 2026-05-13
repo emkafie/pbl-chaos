@@ -34,6 +34,7 @@ export default function DashboardPage() {
     occupiedSlots,
     maintenanceSlots,
     occupancyRate,
+    refresh,
   } = useParkingSlots();
 
   // Local user profile state to allow updates from settings
@@ -150,6 +151,14 @@ export default function DashboardPage() {
                     title="Live_Parking_Grid"
                     icon={MapPin}
                     className="lg:col-span-2"
+                    headerAction={
+                      <button
+                        onClick={() => refresh()}
+                        className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-[#C4FF4D] text-[#C4FF4D] text-[10px] font-black uppercase tracking-wider hover:bg-[#C4FF4D]/10 transition-all"
+                      >
+                        Refresh
+                      </button>
+                    }
                   >
                     <SlotGrid
                       slots={slots}
@@ -194,6 +203,7 @@ export default function DashboardPage() {
               maintenanceSlots={maintenanceSlots}
               occupancyRate={occupancyRate}
               showEditControls={true}
+              onRefresh={refresh}
             />
           )}
           {activeTab === "users" && <div>{isAdmin && <UserManagerTab />}</div>}

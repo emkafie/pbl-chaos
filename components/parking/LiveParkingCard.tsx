@@ -17,6 +17,7 @@ interface LiveParkingCardProps {
   // Show edit mode buttons (for admin/debug)
   showEditControls?: boolean;
   className?: string;
+  onRefresh?: () => void;
 }
 
 const LiveParkingCard: React.FC<LiveParkingCardProps> = ({
@@ -28,6 +29,7 @@ const LiveParkingCard: React.FC<LiveParkingCardProps> = ({
   occupancyRate,
   showEditControls = false,
   className = '',
+  onRefresh,
 }) => {
   // Edit Mode State
   const [editMode, setEditMode] = useState<SlotStatus | null>(null);
@@ -40,16 +42,27 @@ const LiveParkingCard: React.FC<LiveParkingCardProps> = ({
     if (!editMode) return;
     try {
       await updateSlotStatus(slotId, editMode);
+      if (onRefresh) onRefresh();
     } catch (err) {
       console.error('Failed to update slot status:', err);
     }
   };
 
   // Edit buttons rendered in Y2KCard headerAction (aligned with title)
-  const editButtons = showEditControls ? (
+  const editButtons = (
     <div className="flex items-center gap-2 flex-wrap">
-      <button
-        onClick={() => toggleEditMode('available')}
+      {onRefresh && (
+        <button
+          onClick={() => onRefresh()}
+          className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-[#C4FF4D] text-[#C4FF4D] text-[10px] font-black uppercase tracking-wider hover:bg-[#C4FF4D]/10 transition-all"
+        >
+          Refresh
+        </button>
+      )}
+      {showEditControls && (
+        <>
+          <button
+            onClick={() => toggleEditMode('available')}
         className={`flex items-center gap-1.5 px-3 py-1.5 border-2 text-[10px] font-black uppercase tracking-wider transition-all ${
           editMode === 'available'
             ? 'bg-[#C4FF4D] text-[#1A1A1A] border-[#1A1A1A] shadow-[2px_2px_0px_0px_rgba(186,140,255,1)]'
@@ -86,8 +99,10 @@ const LiveParkingCard: React.FC<LiveParkingCardProps> = ({
           <X size={12} /> Cancel
         </button>
       )}
+        </>
+      )}
     </div>
-  ) : undefined;
+  );
 
   return (
     <Y2KCard

@@ -1,5 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { collection, onSnapshot, query, orderBy, doc, updateDoc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  doc,
+  updateDoc,
+  getDocs,
+} from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
 import { ParkingSlot, SlotStatus } from "@/types";
 
@@ -105,17 +113,31 @@ export const useParkingSlots = () => {
   const totalSlots = slots.length;
   const availableSlots = slots.filter((s) => s.status === "available").length;
   const occupiedSlots = slots.filter((s) => s.status === "occupied").length;
-  const maintenanceSlots = slots.filter((s) => s.status === "maintenance").length;
+  const maintenanceSlots = slots.filter(
+    (s) => s.status === "maintenance",
+  ).length;
   const occupancyRate = totalSlots > 0 ? (occupiedSlots / totalSlots) * 100 : 0;
 
-  return { slots, loading, error, totalSlots, availableSlots, occupiedSlots, maintenanceSlots, occupancyRate, refresh: fetchSlots };
+  return {
+    slots,
+    loading,
+    error,
+    totalSlots,
+    availableSlots,
+    occupiedSlots,
+    maintenanceSlots,
+    occupancyRate,
+    refresh: fetchSlots,
+  };
 };
-
 
 // Function untuk mengubah status slot parkir secara manual. Digunakan untuk debug atau ketika sistem otomatis (IR sensor) trouble.
 // @param slotId - ID slot parkir (misal "SLOT_A1")
 // @param newStatus - Status baru: 'available' | 'occupied' | 'maintenance'
-export const updateSlotStatus = async (slotId: string, newStatus: SlotStatus): Promise<void> => {
+export const updateSlotStatus = async (
+  slotId: string,
+  newStatus: SlotStatus,
+): Promise<void> => {
   if (!db) {
     throw new Error("Firestore belum terinisialisasi.");
   }
