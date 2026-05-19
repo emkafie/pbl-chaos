@@ -18,18 +18,18 @@ const Y2KCard: React.FC<Y2KCardProps> = ({
   headerAction,
 }) => {
   const variants = {
-    purple: "border-[#BA8CFF] shadow-[6px_6px_0px_0px_rgba(186,140,255,1)]",
-    grey: "border-[#4D4D4D] shadow-[6px_6px_0px_0px_rgba(77,77,77,1)]",
-    lime: "border-[#C4FF4D] shadow-[6px_6px_0px_0px_rgba(196,255,77,1)]",
+    purple: "border-[var(--color-y2k-purple)] shadow-[6px_6px_0px_0px_var(--color-y2k-purple)]",
+    grey: "border-[var(--color-y2k-border)] shadow-[6px_6px_0px_0px_var(--color-y2k-border)]",
+    lime: "border-[var(--color-y2k-lime)] shadow-[6px_6px_0px_0px_var(--color-y2k-lime)]",
   };
 
   return (
     <div
-      className={`bg-[#1A1A1A] border-4 p-6 mb-10 ${variants[variant]} ${className}`}
+      className={`bg-[var(--color-y2k-bg-main)] border-4 p-6 mb-10 ${variants[variant]} ${className}`}
     >
       {title && (
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-[#C4FF4D] font-black uppercase text-lg italic tracking-widest flex items-center gap-2">
+          <h3 className="text-[var(--color-y2k-lime)] font-black uppercase text-lg italic tracking-widest flex items-center gap-2">
             {Icon && <Icon size={20} />} {title}
           </h3>
           {headerAction && <div>{headerAction}</div>}

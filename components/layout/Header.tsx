@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sun, Moon } from "lucide-react";
 import AvatarDropdown from "../profile/AvatarDropdown";
+import { useTheme } from "@/app/context/ThemeContext";
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -26,22 +27,31 @@ const Header: React.FC<HeaderProps> = ({
   onLogout,
   onOpenNotifications,
 }) => {
+  const { theme, toggleTheme } = useTheme();
+
   return (
-    <header className="h-16 sm:h-20 border-b-4 border-[#4D4D4D] flex items-center justify-between px-4 sm:px-8 bg-[#1A1A1A] shrink-0">
+    <header className="h-16 sm:h-20 border-b-4 border-[var(--color-y2k-border)] flex items-center justify-between px-4 sm:px-8 bg-[var(--color-y2k-bg-main)] shrink-0">
       <div className="flex items-center gap-3 sm:gap-4 min-w-0">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 border-2 border-[#C4FF4D] text-[#C4FF4D] hover:bg-[#C4FF4D] hover:text-[#1A1A1A] transition-all shrink-0"
+          className="p-2 border-2 border-[var(--color-y2k-lime)] text-[var(--color-y2k-lime)] hover:bg-[var(--color-y2k-lime)] hover:text-[var(--color-y2k-button-text)] transition-all shrink-0"
           aria-label="Toggle sidebar"
         >
           {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
-        <h2 className="text-[#C4FF4D] font-black text-sm sm:text-xl uppercase italic tracking-tighter text-ellipsis">
+        <h2 className="text-[var(--color-y2k-lime)] font-black text-sm sm:text-xl uppercase italic tracking-tighter text-ellipsis">
           {title}
         </h2>
       </div>
 
       <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+        <button
+          onClick={toggleTheme}
+          className="p-2 border-2 border-[var(--color-y2k-border)] text-[var(--color-y2k-text-muted)] hover:bg-[var(--color-y2k-border)]/20 hover:text-[var(--color-y2k-text-main)] transition-all rounded-full"
+          title="Toggle Theme"
+        >
+          {theme === "bright" ? <Moon size={18} /> : <Sun size={18} />}
+        </button>
         {userProfile && (
           <AvatarDropdown
             userProfile={userProfile}

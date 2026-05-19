@@ -34,9 +34,9 @@ const SEVERITY_CONFIG: Record<
   }
 > = {
   low: {
-    color: "text-[#C4FF4D]",
-    bg: "bg-[#C4FF4D]/10",
-    border: "border-[#C4FF4D]",
+    color: "text-[var(--color-y2k-lime)]",
+    bg: "bg-[var(--color-y2k-lime)]/10",
+    border: "border-[var(--color-y2k-lime)]",
     icon: <Info size={16} strokeWidth={3} />,
     label: "LOW",
   },
@@ -105,7 +105,7 @@ function OperatorNotificationItem({
     >
       {/* Unread indicator bar */}
       {!notif.isRead && (
-        <div className="absolute top-0 left-0 w-1 h-full bg-[#BA8CFF]" />
+        <div className="absolute top-0 left-0 w-1 h-full bg-[var(--color-y2k-purple)]" />
       )}
 
       {/* Header row */}
@@ -145,7 +145,7 @@ function OperatorNotificationItem({
         {!notif.isRead ? (
           <button
             onClick={() => notif.id && onAcknowledge(notif.id)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#C4FF4D] text-[#1A1A1A] border border-[#1A1A1A] text-[9px] font-black uppercase tracking-wider hover:shadow-[2px_2px_0px_0px_#BA8CFF] hover:translate-x-0.5 hover:translate-y-0.5 transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-y2k-lime)] text-[var(--color-y2k-button-text)] border border-[var(--color-y2k-solid-border)] text-[9px] font-black uppercase tracking-wider hover:shadow-[2px_2px_0px_0px_var(--color-y2k-purple)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all active:scale-95"
           >
             <CheckCircle2 size={10} strokeWidth={3} />
             ACK
@@ -277,7 +277,7 @@ export default function NotificationsModal({
           }
           icon={Bell}
           variant={role === "operator" ? "purple" : "lime"}
-          className="shadow-[10px_10px_0px_0px_#BA8CFF] mb-0 flex flex-col overflow-hidden"
+          className="shadow-[10px_10px_0px_0px_var(--color-y2k-purple)] mb-0 flex flex-col overflow-hidden"
         >
           {/* ─── OPERATOR VIEW ──────────────────────────────── */}
           {role === "operator" && (
@@ -285,7 +285,7 @@ export default function NotificationsModal({
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-[#BA8CFF] animate-pulse" />
+                    <div className="w-2 h-2 bg-[var(--color-y2k-purple)] animate-pulse" />
                     <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
                       SCANNING_ALERT_FEED...
                     </span>
@@ -295,7 +295,7 @@ export default function NotificationsModal({
                 <div className="flex flex-col items-center justify-center py-12 gap-3">
                   <CheckCircle2
                     size={32}
-                    className="text-[#C4FF4D] opacity-50"
+                    className="text-[var(--color-y2k-lime)] opacity-50"
                   />
                   <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
                     NO_ALERTS_IN_QUEUE
@@ -307,8 +307,8 @@ export default function NotificationsModal({
                   {latestNotif && (
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-1.5 h-1.5 bg-[#C4FF4D] animate-pulse" />
-                        <span className="text-[9px] text-[#C4FF4D] font-black uppercase tracking-[0.2em]">
+                        <div className="w-1.5 h-1.5 bg-[var(--color-y2k-lime)] animate-pulse" />
+                        <span className="text-[9px] text-[var(--color-y2k-lime)] font-black uppercase tracking-[0.2em]">
                           LATEST_ALERT
                         </span>
                       </div>
@@ -327,7 +327,7 @@ export default function NotificationsModal({
                         <span className="text-[9px] text-gray-500 font-black uppercase tracking-[0.2em]">
                           ALERT_HISTORY_LOG
                         </span>
-                        <div className="flex-1 h-px bg-[#4D4D4D]" />
+                        <div className="flex-1 h-px bg-[var(--color-y2k-border)]" />
                         <span className="text-[9px] text-gray-600 font-bold">
                           [{notifications.length - 1}]
                         </span>
@@ -355,8 +355,8 @@ export default function NotificationsModal({
               {/* Compose Area */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <Send size={12} className="text-[#C4FF4D]" />
-                  <span className="text-[9px] text-[#C4FF4D] font-black uppercase tracking-[0.2em]">
+                  <Send size={12} className="text-[var(--color-y2k-lime)]" />
+                  <span className="text-[9px] text-[var(--color-y2k-lime)] font-black uppercase tracking-[0.2em]">
                     COMPOSE_BROADCAST
                   </span>
                 </div>
@@ -369,7 +369,7 @@ export default function NotificationsModal({
                   placeholder="ENTER_SYSTEM_MESSAGE..."
                   maxLength={500}
                   rows={3}
-                  className="w-full bg-[#0D0D0D] border-2 border-[#4D4D4D] text-white text-xs font-bold uppercase tracking-tight p-3 resize-none focus:outline-none focus:border-[#C4FF4D] transition-colors placeholder:text-gray-600 placeholder:italic"
+                  className="w-full bg-[#0D0D0D] border-2 border-[var(--color-y2k-border)] text-[var(--color-y2k-text-main)] text-xs font-bold uppercase tracking-tight p-3 resize-none focus:outline-none focus:border-[var(--color-y2k-lime)] transition-colors placeholder:text-gray-600 placeholder:italic"
                 />
 
                 {/* Severity selector */}
@@ -389,7 +389,7 @@ export default function NotificationsModal({
                         className={`flex items-center gap-1.5 px-3 py-1.5 border-2 text-[9px] font-black uppercase tracking-wider transition-all ${
                           isActive
                             ? `${cfg.border} ${cfg.bg} ${cfg.color} shadow-[2px_2px_0px_0px_rgba(186,140,255,0.5)]`
-                            : "border-[#4D4D4D] text-gray-500 hover:text-gray-300 hover:border-gray-400"
+                            : "border-[var(--color-y2k-border)] text-gray-500 hover:text-gray-300 hover:border-gray-400"
                         }`}
                       >
                         {cfg.icon}
@@ -404,10 +404,10 @@ export default function NotificationsModal({
                   id="notification-send-btn"
                   onClick={handleSend}
                   disabled={!message.trim() || sending}
-                  className={`w-full flex items-center justify-center gap-2 py-3 border-2 border-[#1A1A1A] font-black uppercase text-xs tracking-widest transition-all ${
+                  className={`w-full flex items-center justify-center gap-2 py-3 border-2 border-[var(--color-y2k-solid-border)] font-black uppercase text-xs tracking-widest transition-all ${
                     !message.trim() || sending
-                      ? "bg-[#4D4D4D]/30 text-gray-600 cursor-not-allowed"
-                      : "bg-[#C4FF4D] text-[#1A1A1A] shadow-[4px_4px_0px_0px_#BA8CFF] hover:shadow-none hover:translate-x-1 hover:translate-y-1 active:scale-[0.98]"
+                      ? "bg-[var(--color-y2k-border)]/30 text-gray-600 cursor-not-allowed"
+                      : "bg-[var(--color-y2k-lime)] text-[var(--color-y2k-button-text)] shadow-[4px_4px_0px_0px_var(--color-y2k-purple)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 active:scale-[0.98]"
                   }`}
                 >
                   {sending ? (
@@ -445,7 +445,7 @@ export default function NotificationsModal({
                     <span className="text-[9px] text-gray-500 font-black uppercase tracking-[0.2em]">
                       SENT_LOG
                     </span>
-                    <div className="flex-1 h-px bg-[#4D4D4D]" />
+                    <div className="flex-1 h-px bg-[var(--color-y2k-border)]" />
                     <span className="text-[9px] text-gray-600 font-bold">
                       [{sentNotifications.length}]
                     </span>
@@ -465,7 +465,7 @@ export default function NotificationsModal({
         <button
           onClick={onClose}
           aria-label="close notifications"
-          className="absolute -top-3 -right-3 bg-[#BA8CFF] text-[#1A1A1A] p-2 border-2 border-[#1A1A1A] shadow-[2px_2px_0px_0px_#C4FF4D] hover:scale-110 active:scale-95 transition-all z-10"
+          className="absolute -top-3 -right-3 bg-[var(--color-y2k-purple)] text-[var(--color-y2k-button-text)] p-2 border-2 border-[var(--color-y2k-solid-border)] shadow-[2px_2px_0px_0px_var(--color-y2k-lime)] hover:scale-110 active:scale-95 transition-all z-10"
         >
           <X size={16} strokeWidth={3} />
         </button>
@@ -495,13 +495,13 @@ export default function NotificationsModal({
           width: 4px;
         }
         .scrollbar-thin::-webkit-scrollbar-track {
-          background: #1a1a1a;
+          background: var(--color-y2k-solid-border);
         }
         .scrollbar-thin::-webkit-scrollbar-thumb {
-          background: #4d4d4d;
+          background: var(--color-y2k-border);
         }
         .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-          background: #ba8cff;
+          background: var(--color-y2k-purple);
         }
       `}</style>
     </div>

@@ -67,23 +67,23 @@ export const RecentLogin = ({ role }: RecentLoginProps) => {
           <div className="space-y-4">
             {visibleLogs.length > 0 ? (
               visibleLogs.map((log, i) => (
-                <div key={i} className="flex justify-between items-center border-b border-[#4D4D4D] pb-2">
+                <div key={i} className="flex justify-between items-center border-b border-[var(--color-y2k-border)] pb-2">
                   <div>
                     <p className="text-xs font-black">{log.name}</p>
-                    <p className="text-[8px] text-[#BA8CFF] font-bold uppercase">{log.role}</p>
+                    <p className="text-[8px] text-[var(--color-y2k-purple)] font-bold uppercase">{log.role}</p>
                   </div>
                   <span className="text-[10px] text-gray-500 font-bold italic">{log.time}</span>
                 </div>
               ))
             ) : (
-              <div className="text-[10px] text-gray-400 uppercase tracking-widest">
+              <div className="text-[10px] text-[var(--color-y2k-text-muted)] uppercase tracking-widest">
                 No recent login records
               </div>
             )}
             {recentLogins.length > 3 && (
               <button
                 onClick={() => setShowAllLogs(!showAllLogs)}
-                className="w-full text-[10px] font-black text-[#C4FF4D] underline uppercase mt-2"
+                className="w-full text-[10px] font-black text-[var(--color-y2k-lime)] underline uppercase mt-2"
               >
                 {showAllLogs ? "View fewer logs" : "View all logs"}
               </button>

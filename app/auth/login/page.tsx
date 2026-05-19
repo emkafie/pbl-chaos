@@ -42,15 +42,15 @@ const LoginPage = ({ onSwitch, onSuccess }: any) => {
 
   return (
     <div className="max-w-md w-full relative">
-      <div className="absolute -top-6 -left-2 bg-[#BA8CFF] text-[#1A1A1A] px-4 py-1 font-black transform -rotate-1 border-2 border-[#1A1A1A] z-10 text-[10px] shadow-[2px_2px_0px_0px_#C4FF4D]">
+      <div className="absolute -top-6 -left-2 bg-[var(--color-y2k-purple)] text-[var(--color-y2k-button-text)] px-4 py-1 font-black transform -rotate-1 border-2 border-[var(--color-y2k-solid-border)] z-10 text-[10px] shadow-[2px_2px_0px_0px_var(--color-y2k-lime)]">
         SECURITY_ACCESS_v4.0
       </div>
 
       <Y2KCard className="relative pt-10">
         <div className="text-center mb-10">
-          <div className="inline-block p-2 border-2 border-[#C4FF4D] mb-4 bg-[#1A1A1A]"><Car className="text-[#C4FF4D]" size={32} /></div>
-          <h1 className="text-[#C4FF4D] text-5xl font-black italic tracking-tighter mb-1 leading-none">P-IOT</h1>
-          <p className="text-[#BA8CFF] text-[10px] uppercase font-bold tracking-[0.4em]">Integrated Parking Node</p>
+          <div className="inline-block p-2 border-2 border-[var(--color-y2k-lime)] mb-4 bg-[var(--color-y2k-bg-main)]"><Car className="text-[var(--color-y2k-lime)]" size={32} /></div>
+          <h1 className="text-[var(--color-y2k-lime)] text-5xl font-black italic tracking-tighter mb-1 leading-none">P-IOT</h1>
+          <p className="text-[var(--color-y2k-purple)] text-[10px] uppercase font-bold tracking-[0.4em]">Integrated Parking Node</p>
         </div>
 
         {error && (
@@ -61,26 +61,26 @@ const LoginPage = ({ onSwitch, onSuccess }: any) => {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-[#C4FF4D] text-[10px] font-bold tracking-widest"><User size={12} /> User_Identification</label>
-            <input type="text" placeholder="USER_ID" className="w-full bg-[#4D4D4D] border-2 border-[#BA8CFF] p-3 text-white focus:outline-none focus:border-[#C4FF4D] font-bold placeholder:opacity-20" value={credentials.username} onChange={(e) => setCredentials({ ...credentials, username: e.target.value })} required />
+            <label className="flex items-center gap-2 text-[var(--color-y2k-lime)] text-[10px] font-bold tracking-widest"><User size={12} /> User_Identification</label>
+            <input type="text" placeholder="USER_ID" className="w-full bg-[var(--color-y2k-border)] border-2 border-[var(--color-y2k-purple)] p-3 text-[var(--color-y2k-text-main)] focus:outline-none focus:border-[var(--color-y2k-lime)] font-bold placeholder:opacity-20" value={credentials.username} onChange={(e) => setCredentials({ ...credentials, username: e.target.value })} required />
           </div>
 
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-[#C4FF4D] text-[10px] font-bold tracking-widest"><Lock size={12} /> Access_Key</label>
+            <label className="flex items-center gap-2 text-[var(--color-y2k-lime)] text-[10px] font-bold tracking-widest"><Lock size={12} /> Access_Key</label>
             <div className="relative">
-              <input type={credentials.showPassword ? "text" : "password"} placeholder="********" className="w-full bg-[#4D4D4D] border-2 border-[#BA8CFF] p-3 text-white focus:outline-none focus:border-[#C4FF4D] font-bold placeholder:opacity-20" value={credentials.password} onChange={(e) => setCredentials({ ...credentials, password: e.target.value })} required />
-              <button type="button" onClick={() => setCredentials({ ...credentials, showPassword: !credentials.showPassword })} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#BA8CFF] hover:text-[#C4FF4D] transition-colors">
+              <input type={credentials.showPassword ? "text" : "password"} placeholder="********" className="w-full bg-[var(--color-y2k-border)] border-2 border-[var(--color-y2k-purple)] p-3 text-[var(--color-y2k-text-main)] focus:outline-none focus:border-[var(--color-y2k-lime)] font-bold placeholder:opacity-20" value={credentials.password} onChange={(e) => setCredentials({ ...credentials, password: e.target.value })} required />
+              <button type="button" onClick={() => setCredentials({ ...credentials, showPassword: !credentials.showPassword })} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-y2k-purple)] hover:text-[var(--color-y2k-lime)] transition-colors">
                 {credentials.showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
               </button>
             </div>
           </div>
 
-          <button type="submit" disabled={loading} className={`w-full bg-[#C4FF4D] text-[#1A1A1A] font-black py-4 border-2 border-[#1A1A1A] shadow-[4px_4px_0px_0px_rgba(186,140,255,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all flex items-center justify-center gap-2 text-sm uppercase ${loading ? "opacity-50" : ""}`}>
+          <button type="submit" disabled={loading} className={`w-full bg-[var(--color-y2k-lime)] text-[var(--color-y2k-button-text)] font-black py-4 border-2 border-[var(--color-y2k-solid-border)] shadow-[4px_4px_0px_0px_var(--color-y2k-purple)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all flex items-center justify-center gap-2 text-sm uppercase ${loading ? "opacity-50" : ""}`}>
             {loading ? "VERIFYING_HASH..." : "INITIATE_SESSION"}
           </button>
         </form>
 
-        <button onClick={onSwitch} className="w-full mt-6 text-[10px] text-gray-500 hover:text-[#C4FF4D] font-bold underline uppercase italic tracking-widest">
+        <button onClick={onSwitch} className="w-full mt-6 text-[10px] text-gray-500 hover:text-[var(--color-y2k-lime)] font-bold underline uppercase italic tracking-widest">
           Register New Node
         </button>
       </Y2KCard>

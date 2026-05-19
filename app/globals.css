@@ -1,37 +1,59 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@layer base {
+  :root {
+    --y2k-bg-main: #1A1A1A;
+    --y2k-bg-panel: #111111;
+    --y2k-border: #4D4D4D;
+    --y2k-text-main: #FFFFFF;
+    --y2k-text-muted: #9CA3AF;
+    --y2k-lime: #C4FF4D;
+    --y2k-purple: #BA8CFF;
+    --y2k-button-text: #1A1A1A;
+    --y2k-solid-border: #1A1A1A;
+  }
 
-::selection {
-  background: #C4FF4D;
-  color: #1A1A1A;
-  text-shadow: 0 0 4px #C4FF4D;
-}
-
-::-moz-selection {
-  background: #C4FF4D;
-  color: #1A1A1A;
+  .bright-theme {
+    --y2k-bg-main: #E8E8E8;
+    --y2k-bg-panel: #FFFFFF;
+    --y2k-border: #A0A0A0;
+    --y2k-text-main: #1A1A1A;
+    --y2k-text-muted: #4B5563;
+    --y2k-lime: #4A6E10;
+    --y2k-purple: #5D3FD3;
+    --y2k-button-text: #FFFFFF;
+    --y2k-solid-border: #1A1A1A;
+  }
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-y2k-bg-main: var(--y2k-bg-main);
+  --color-y2k-bg-panel: var(--y2k-bg-panel);
+  --color-y2k-border: var(--y2k-border);
+  --color-y2k-text-main: var(--y2k-text-main);
+  --color-y2k-text-muted: var(--y2k-text-muted);
+  --color-y2k-lime: var(--y2k-lime);
+  --color-y2k-purple: var(--y2k-purple);
+  --color-y2k-button-text: var(--y2k-button-text);
+  --color-y2k-solid-border: var(--y2k-solid-border);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+::selection {
+  background: var(--y2k-lime);
+  color: var(--y2k-button-text);
+  text-shadow: 0 0 4px var(--y2k-lime);
+}
+
+::-moz-selection {
+  background: var(--y2k-lime);
+  color: var(--y2k-button-text);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--y2k-bg-main);
+  color: var(--y2k-text-main);
   font-family: Arial, Helvetica, sans-serif;
 }

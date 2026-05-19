@@ -195,7 +195,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
     if (score <= 1) return { strength: 20, label: "WEAK", color: "#ff4444" };
     if (score <= 2) return { strength: 40, label: "FAIR", color: "#ffaa44" };
     if (score <= 3) return { strength: 60, label: "GOOD", color: "#ffff44" };
-    if (score <= 4) return { strength: 80, label: "STRONG", color: "#C4FF4D" };
+    if (score <= 4) return { strength: 80, label: "STRONG", color: "var(--color-y2k-lime)" };
     return { strength: 100, label: "EXCELLENT", color: "#00ff88" };
   };
 
@@ -208,8 +208,8 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
         <div
           className={`fixed top-6 right-6 z-200 flex items-center gap-3 px-5 py-3 border-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-bold text-xs uppercase tracking-wider ${
             toast.type === "success"
-              ? "bg-[#C4FF4D] text-[#1A1A1A] border-[#1A1A1A]"
-              : "bg-red-500 text-white border-[#1A1A1A]"
+              ? "bg-[var(--color-y2k-lime)] text-[var(--color-y2k-button-text)] border-[var(--color-y2k-solid-border)]"
+              : "bg-red-500 text-[var(--color-y2k-text-main)] border-[var(--color-y2k-solid-border)]"
           }`}
           style={{
             animation: "toastSlide 0.3s ease-out",
@@ -236,19 +236,19 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
               <img
                 src={profilePicture}
                 alt={userProfile.username}
-                className="w-28 h-28 rounded-full border-4 border-[#BA8CFF] shadow-[4px_4px_0px_0px_#C4FF4D] object-cover"
+                className="w-28 h-28 rounded-full border-4 border-[var(--color-y2k-purple)] shadow-[4px_4px_0px_0px_var(--color-y2k-lime)] object-cover"
               />
             ) : (
-              <div className="w-28 h-28 rounded-full border-4 border-[#BA8CFF] shadow-[4px_4px_0px_0px_#C4FF4D] bg-[#BA8CFF]/20 flex items-center justify-center">
-                <span className="text-5xl font-black text-[#BA8CFF] uppercase">
+              <div className="w-28 h-28 rounded-full border-4 border-[var(--color-y2k-purple)] shadow-[4px_4px_0px_0px_var(--color-y2k-lime)] bg-[var(--color-y2k-purple)]/20 flex items-center justify-center">
+                <span className="text-5xl font-black text-[var(--color-y2k-purple)] uppercase">
                   {userProfile.username?.charAt(0) || "?"}
                 </span>
               </div>
             )}
 
             {pictureLoading && (
-              <div className="absolute inset-0 bg-[#1A1A1A]/70 rounded-full flex items-center justify-center">
-                <div className="w-8 h-8 border-3 border-[#C4FF4D] border-t-transparent rounded-full animate-spin" />
+              <div className="absolute inset-0 bg-[var(--color-y2k-bg-main)]/70 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 border-3 border-[var(--color-y2k-lime)] border-t-transparent rounded-full animate-spin" />
               </div>
             )}
           </div>
@@ -264,7 +264,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                 id="upload-picture-btn"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={pictureLoading}
-                className="flex items-center gap-2 px-4 py-2.5 bg-[#C4FF4D] text-[#1A1A1A] font-black text-[11px] uppercase tracking-wider border-2 border-[#1A1A1A] shadow-[3px_3px_0px_0px_rgba(186,140,255,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_rgba(186,140,255,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-y2k-lime)] text-[var(--color-y2k-button-text)] font-black text-[11px] uppercase tracking-wider border-2 border-[var(--color-y2k-solid-border)] shadow-[3px_3px_0px_0px_var(--color-y2k-purple)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_var(--color-y2k-purple)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Upload size={14} />
                 <span>Upload</span>
@@ -313,12 +313,12 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Enter current password..."
-                className="w-full bg-[#4D4D4D]/20 border-2 border-[#4D4D4D] text-white placeholder-gray-600 px-4 py-3 text-sm font-mono focus:border-[#C4FF4D] focus:outline-none transition-colors pr-12"
+                className="w-full bg-[var(--color-y2k-border)]/20 border-2 border-[var(--color-y2k-border)] text-[var(--color-y2k-text-main)] placeholder-gray-600 px-4 py-3 text-sm font-mono focus:border-[var(--color-y2k-lime)] focus:outline-none transition-colors pr-12"
               />
               <button
                 type="button"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#C4FF4D] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[var(--color-y2k-lime)] transition-colors"
               >
                 {showCurrentPassword ? (
                   <EyeOff size={16} />
@@ -341,12 +341,12 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Enter new password..."
-                className="w-full bg-[#4D4D4D]/20 border-2 border-[#4D4D4D] text-white placeholder-gray-600 px-4 py-3 text-sm font-mono focus:border-[#C4FF4D] focus:outline-none transition-colors pr-12"
+                className="w-full bg-[var(--color-y2k-border)]/20 border-2 border-[var(--color-y2k-border)] text-[var(--color-y2k-text-main)] placeholder-gray-600 px-4 py-3 text-sm font-mono focus:border-[var(--color-y2k-lime)] focus:outline-none transition-colors pr-12"
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#C4FF4D] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[var(--color-y2k-lime)] transition-colors"
               >
                 {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -354,7 +354,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
             {/* Password Strength Indicator */}
             {newPassword && (
               <div className="mt-2 space-y-1">
-                <div className="w-full h-1.5 bg-[#4D4D4D]/30">
+                <div className="w-full h-1.5 bg-[var(--color-y2k-border)]/30">
                   <div
                     className="h-full transition-all duration-300"
                     style={{
@@ -385,18 +385,18 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password..."
-                className={`w-full bg-[#4D4D4D]/20 border-2 text-white placeholder-gray-600 px-4 py-3 text-sm font-mono focus:outline-none transition-colors pr-12 ${
+                className={`w-full bg-[var(--color-y2k-border)]/20 border-2 text-[var(--color-y2k-text-main)] placeholder-gray-600 px-4 py-3 text-sm font-mono focus:outline-none transition-colors pr-12 ${
                   confirmPassword && confirmPassword !== newPassword
                     ? "border-red-400 focus:border-red-400"
                     : confirmPassword && confirmPassword === newPassword
-                    ? "border-[#C4FF4D] focus:border-[#C4FF4D]"
-                    : "border-[#4D4D4D] focus:border-[#C4FF4D]"
+                    ? "border-[var(--color-y2k-lime)] focus:border-[var(--color-y2k-lime)]"
+                    : "border-[var(--color-y2k-border)] focus:border-[var(--color-y2k-lime)]"
                 }`}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#C4FF4D] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[var(--color-y2k-lime)] transition-colors"
               >
                 {showConfirmPassword ? (
                   <EyeOff size={16} />
@@ -424,11 +424,11 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                 !confirmPassword ||
                 newPassword !== confirmPassword
               }
-              className="flex items-center gap-2 px-6 py-3 bg-[#C4FF4D] text-[#1A1A1A] font-black text-xs uppercase tracking-wider border-2 border-[#1A1A1A] shadow-[3px_3px_0px_0px_rgba(186,140,255,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_rgba(186,140,255,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[3px_3px_0px_0px_rgba(186,140,255,1)]"
+              className="flex items-center gap-2 px-6 py-3 bg-[var(--color-y2k-lime)] text-[var(--color-y2k-button-text)] font-black text-xs uppercase tracking-wider border-2 border-[var(--color-y2k-solid-border)] shadow-[3px_3px_0px_0px_var(--color-y2k-purple)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_var(--color-y2k-purple)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[3px_3px_0px_0px_var(--color-y2k-purple)]"
             >
               {passwordLoading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-[#1A1A1A] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-[var(--color-y2k-solid-border)] border-t-transparent rounded-full animate-spin" />
                   <span>Updating...</span>
                 </>
               ) : (

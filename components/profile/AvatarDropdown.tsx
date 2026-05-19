@@ -100,10 +100,10 @@ const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
         aria-haspopup="true"
       >
         <div className="hidden sm:block text-right font-mono">
-          <p className="text-[10px] text-[#BA8CFF] font-bold uppercase tracking-widest">
+          <p className="text-[10px] text-[var(--color-y2k-purple)] font-bold uppercase tracking-widest">
             {userProfile.role || "Unknown Role"}_access
           </p>
-          <p className="text-sm font-black underline decoration-[#C4FF4D]">
+          <p className="text-sm font-black underline decoration-[var(--color-y2k-lime)]">
             {userProfile.username || "Unknown User"}
           </p>
         </div>
@@ -112,11 +112,11 @@ const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
             <img
               src={userProfile.profilePicture}
               alt={userProfile.username}
-              className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-[#1A1A1A] shadow-[2px_2px_0px_0px_#C4FF4D] rounded-full object-cover group-hover:shadow-[2px_2px_0px_0px_#BA8CFF] transition-all"
+              className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-[var(--color-y2k-solid-border)] shadow-[2px_2px_0px_0px_var(--color-y2k-lime)] rounded-full object-cover group-hover:shadow-[2px_2px_0px_0px_var(--color-y2k-purple)] transition-all"
             />
           ) : (
             <div
-              className="w-9 h-9 sm:w-10 sm:h-10 bg-[#BA8CFF] border-2 border-[#1A1A1A] shadow-[2px_2px_0px_0px_#C4FF4D] flex items-center justify-center rounded-full text-[#1A1A1A] font-bold uppercase text-sm group-hover:shadow-[2px_2px_0px_0px_#BA8CFF] group-hover:bg-[#C4FF4D] transition-all"
+              className="w-9 h-9 sm:w-10 sm:h-10 bg-[var(--color-y2k-purple)] border-2 border-[var(--color-y2k-solid-border)] shadow-[2px_2px_0px_0px_var(--color-y2k-lime)] flex items-center justify-center rounded-full text-[var(--color-y2k-button-text)] font-bold uppercase text-sm group-hover:shadow-[2px_2px_0px_0px_var(--color-y2k-purple)] group-hover:bg-[var(--color-y2k-lime)] transition-all"
             >
               {userProfile.username
                 ? userProfile.username.charAt(0).toUpperCase()
@@ -126,14 +126,14 @@ const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
 
           {/* Unread badge on avatar (operator only) */}
           {isOperator && unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center bg-red-500 text-white text-[9px] font-black border border-[#1A1A1A] px-0.5 animate-pulse">
+            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center bg-red-500 text-[var(--color-y2k-text-main)] text-[9px] font-black border border-[var(--color-y2k-solid-border)] px-0.5 animate-pulse">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
         </div>
         <ChevronDown
           size={14}
-          className={`text-[#BA8CFF] transition-transform duration-200 ${
+          className={`text-[var(--color-y2k-purple)] transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -142,17 +142,17 @@ const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className="absolute right-0 top-full mt-3 w-56 bg-[#1A1A1A] border-3 border-[#4D4D4D] shadow-[4px_4px_0px_0px_rgba(186,140,255,1)] z-100 overflow-hidden"
+          className="absolute right-0 top-full mt-3 w-56 bg-[var(--color-y2k-bg-main)] border-3 border-[var(--color-y2k-border)] shadow-[4px_4px_0px_0px_var(--color-y2k-purple)] z-100 overflow-hidden"
           style={{
             animation: "dropdownSlide 0.15s ease-out",
           }}
         >
           {/* User info header */}
-          <div className="px-4 py-3 border-b-2 border-[#4D4D4D] bg-[#4D4D4D]/10">
-            <p className="text-xs font-black text-white uppercase tracking-wider truncate">
+          <div className="px-4 py-3 border-b-2 border-[var(--color-y2k-border)] bg-[var(--color-y2k-border)]/10">
+            <p className="text-xs font-black text-[var(--color-y2k-text-main)] uppercase tracking-wider truncate">
               {userProfile.username}
             </p>
-            <p className="text-[10px] text-[#BA8CFF] font-bold uppercase tracking-widest mt-0.5">
+            <p className="text-[10px] text-[var(--color-y2k-purple)] font-bold uppercase tracking-widest mt-0.5">
               {userProfile.role}_access
             </p>
           </div>
@@ -162,7 +162,7 @@ const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
             {menuItems.map((item) => (
               <React.Fragment key={item.label}>
                 {item.danger && (
-                  <div className="mx-3 my-1 border-t border-[#4D4D4D]" />
+                  <div className="mx-3 my-1 border-t border-[var(--color-y2k-border)]" />
                 )}
                 <button
                   id={`dropdown-${item.label.toLowerCase()}`}
@@ -170,14 +170,14 @@ const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
                   className={`w-full flex items-center gap-3 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all ${
                     item.danger
                       ? "text-red-400 hover:bg-red-400/10 hover:text-red-300"
-                      : "text-gray-400 hover:bg-[#C4FF4D]/10 hover:text-[#C4FF4D]"
+                      : "text-[var(--color-y2k-text-muted)] hover:bg-[var(--color-y2k-lime)]/10 hover:text-[var(--color-y2k-lime)]"
                   }`}
                 >
                   {item.icon}
                   <span className="flex-1 text-left">{item.label}</span>
                   {/* Unread badge next to "Notifications" */}
                   {item.badge && (
-                    <span className="min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[9px] font-black px-1 border border-[#1A1A1A] shadow-[1px_1px_0px_0px_#BA8CFF]">
+                    <span className="min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-[var(--color-y2k-text-main)] text-[9px] font-black px-1 border border-[var(--color-y2k-solid-border)] shadow-[1px_1px_0px_0px_var(--color-y2k-purple)]">
                       {item.badge > 99 ? "99+" : item.badge}
                     </span>
                   )}

@@ -54,7 +54,7 @@ const LiveParkingCard: React.FC<LiveParkingCardProps> = ({
       {onRefresh && (
         <button
           onClick={() => onRefresh()}
-          className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-[#C4FF4D] text-[#C4FF4D] text-[10px] font-black uppercase tracking-wider hover:bg-[#C4FF4D]/10 transition-all"
+          className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-[var(--color-y2k-lime)] text-[var(--color-y2k-lime)] text-[10px] font-black uppercase tracking-wider hover:bg-[var(--color-y2k-lime)]/10 transition-all"
         >
           Refresh
         </button>
@@ -65,8 +65,8 @@ const LiveParkingCard: React.FC<LiveParkingCardProps> = ({
             onClick={() => toggleEditMode('available')}
         className={`flex items-center gap-1.5 px-3 py-1.5 border-2 text-[10px] font-black uppercase tracking-wider transition-all ${
           editMode === 'available'
-            ? 'bg-[#C4FF4D] text-[#1A1A1A] border-[#1A1A1A] shadow-[2px_2px_0px_0px_rgba(186,140,255,1)]'
-            : 'border-[#C4FF4D] text-[#C4FF4D] hover:bg-[#C4FF4D]/10'
+            ? 'bg-[var(--color-y2k-lime)] text-[var(--color-y2k-button-text)] border-[var(--color-y2k-solid-border)] shadow-[2px_2px_0px_0px_var(--color-y2k-purple)]'
+            : 'border-[var(--color-y2k-lime)] text-[var(--color-y2k-lime)] hover:bg-[var(--color-y2k-lime)]/10'
         }`}
       >
         <Shield size={12} /> Available
@@ -75,8 +75,8 @@ const LiveParkingCard: React.FC<LiveParkingCardProps> = ({
         onClick={() => toggleEditMode('occupied')}
         className={`flex items-center gap-1.5 px-3 py-1.5 border-2 text-[10px] font-black uppercase tracking-wider transition-all ${
           editMode === 'occupied'
-            ? 'bg-[#BA8CFF] text-[#1A1A1A] border-[#1A1A1A] shadow-[2px_2px_0px_0px_rgba(196,255,77,1)]'
-            : 'border-[#BA8CFF] text-[#BA8CFF] hover:bg-[#BA8CFF]/10'
+            ? 'bg-[var(--color-y2k-purple)] text-[var(--color-y2k-button-text)] border-[var(--color-y2k-solid-border)] shadow-[2px_2px_0px_0px_var(--color-y2k-lime)]'
+            : 'border-[var(--color-y2k-purple)] text-[var(--color-y2k-purple)] hover:bg-[var(--color-y2k-purple)]/10'
         }`}
       >
         <Car size={12} /> Occupied
@@ -85,7 +85,7 @@ const LiveParkingCard: React.FC<LiveParkingCardProps> = ({
         onClick={() => toggleEditMode('maintenance')}
         className={`flex items-center gap-1.5 px-3 py-1.5 border-2 text-[10px] font-black uppercase tracking-wider transition-all ${
           editMode === 'maintenance'
-            ? 'bg-[#FFD600] text-[#1A1A1A] border-[#1A1A1A] shadow-[2px_2px_0px_0px_rgba(186,140,255,1)]'
+            ? 'bg-[#FFD600] text-[var(--color-y2k-button-text)] border-[var(--color-y2k-solid-border)] shadow-[2px_2px_0px_0px_var(--color-y2k-purple)]'
             : 'border-[#FFD600] text-[#FFD600] hover:bg-[#FFD600]/10'
         }`}
       >
@@ -122,10 +122,10 @@ const LiveParkingCard: React.FC<LiveParkingCardProps> = ({
         editMode={editMode}
       />
 
-      <div className="mt-6 sm:mt-8 bg-[#4D4D4D]/20 p-3 sm:p-4 border-l-4 border-[#C4FF4D] flex flex-col gap-2">
+      <div className="mt-6 sm:mt-8 bg-[var(--color-y2k-border)]/20 p-3 sm:p-4 border-l-4 border-[var(--color-y2k-lime)] flex flex-col gap-2">
         <div className="flex items-center gap-3 text-[10px] font-bold">
-          <div className="w-2 h-2 bg-[#C4FF4D] animate-pulse"></div>
-          <span className="text-[#C4FF4D] uppercase italic">
+          <div className="w-2 h-2 bg-[var(--color-y2k-lime)] animate-pulse"></div>
+          <span className="text-[var(--color-y2k-lime)] uppercase italic">
             IoT_Stream: Node_A {' > '} Cloud_Gateway
           </span>
         </div>
