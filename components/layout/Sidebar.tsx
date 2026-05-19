@@ -23,8 +23,8 @@ const NavItem: React.FC<NavItemProps> = ({
     onClick={onClick}
     className={`w-full flex items-center gap-4 p-3 transition-all font-bold uppercase text-[11px] border-2 ${
       active
-        ? "bg-[var(--color-y2k-lime)] text-[var(--color-y2k-button-text)] border-[var(--color-y2k-solid-border)] shadow-[3px_3px_0px_0px_var(--color-y2k-purple)] translate-x-1"
-        : "text-gray-500 border-transparent hover:text-[var(--color-y2k-text-main)] hover:translate-x-1"
+        ? "bg-(--color-y2k-lime) text-(--color-y2k-button-text) border-(--color-y2k-solid-border) shadow-[3px_3px_0px_0px_var(--color-y2k-purple)] translate-x-1"
+        : "text-gray-500 border-transparent hover:text-(--color-y2k-text-main) hover:translate-x-1"
     }`}
   >
     {icon}
@@ -73,7 +73,7 @@ export const Sidebar = ({
       <aside
         className={`
           fixed md:relative inset-y-0 left-0 z-50
-          bg-[var(--color-y2k-bg-main)] border-r-4 border-[var(--color-y2k-border)]
+          bg-(--color-y2k-bg-main) border-r-4 border-(--color-y2k-border)
           transition-all duration-300 shrink-0
           ${isOpen
             ? "w-64 translate-x-0"
@@ -83,12 +83,12 @@ export const Sidebar = ({
       >
         {/* Logo */}
         <div className="p-6 flex items-center gap-3">
-          <div className="bg-[var(--color-y2k-lime)] p-2 border-2 border-[var(--color-y2k-solid-border)]">
-            <Car className="text-[var(--color-y2k-button-text)]" size={20} />
+          <div className="bg-(--color-y2k-lime) p-2 border-2 border-(--color-y2k-solid-border)">
+            <Car className="text-(--color-y2k-button-text)" size={20} />
           </div>
           {/* Always show text on mobile drawer; on desktop respect collapsed state */}
           <span
-            className={`font-black text-xl italic tracking-tighter text-[var(--color-y2k-lime)] ${
+            className={`font-black text-xl italic tracking-tighter text-(--color-y2k-lime) ${
               !isOpen ? "md:hidden" : ""
             }`}
           >
@@ -117,7 +117,7 @@ export const Sidebar = ({
           {user?.role === "admin" && (
             <>
               <div
-                className={`pt-4 border-t-2 border-[var(--color-y2k-border)] ${
+                className={`pt-4 border-t-2 border-(--color-y2k-border) ${
                   !isOpen ? "md:hidden" : ""
                 }`}
               >
@@ -152,7 +152,7 @@ export const Sidebar = ({
           <div className="pt-10">
             <button
               onClick={onLogout}
-              className="w-full flex items-center gap-4 p-3 text-[var(--color-y2k-purple)] hover:bg-[var(--color-y2k-purple)] hover:text-[var(--color-y2k-button-text)] transition-colors font-bold uppercase text-xs"
+              className="w-full flex items-center gap-4 p-3 text-(--color-y2k-purple) hover:bg-(--color-y2k-purple) hover:text-(--color-y2k-button-text) transition-colors font-bold uppercase text-xs"
             >
               <LogOut size={20} />
               {isOpen && <span>Disconnect</span>}

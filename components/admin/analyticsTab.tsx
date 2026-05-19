@@ -116,7 +116,7 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20 text-[var(--color-y2k-lime)] font-mono">
+      <div className="flex items-center justify-center py-20 text-(--color-y2k-lime) font-mono">
         <div className="animate-pulse">FETCHING_FROM_AZURE_BLOB...</div>
       </div>
     );
@@ -126,7 +126,7 @@ export default function AnalyticsPage() {
     <div className="px-2 space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-700">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
-        <h1 className="text-[var(--color-y2k-lime)] text-2xl sm:text-3xl font-black italic uppercase tracking-tighter flex items-center gap-3">
+        <h1 className="text-(--color-y2k-lime) text-2xl sm:text-3xl font-black italic uppercase tracking-tighter flex items-center gap-3">
           <BarChart3 size={28} className="shrink-0" /> Big_Data_Analytics
         </h1>
 
@@ -143,14 +143,14 @@ export default function AnalyticsPage() {
             {dataSource === "azure-blob" ? "⚡ Azure_Blob" : "📁 Local_JSON"}
           </div>
 
-          <div className="bg-[var(--color-y2k-purple)] text-[var(--color-y2k-button-text)] px-4 py-1 text-[10px] font-black uppercase shadow-[3px_3px_0px_0px_var(--color-y2k-lime)]">
+          <div className="bg-(--color-y2k-purple) text-(--color-y2k-button-text) px-4 py-1 text-[10px] font-black uppercase shadow-[3px_3px_0px_0px_var(--color-y2k-lime)]">
             Sample_Size: {sessions.length} Records
           </div>
 
           {/* Manual refresh button — invalidates client-side cache */}
           <button
             onClick={() => fetchSessions(true)}
-            className="flex items-center gap-1 bg-[var(--color-y2k-bg-main)] border-2 border-[var(--color-y2k-lime)] text-[var(--color-y2k-lime)] px-3 py-1 text-[10px] font-black uppercase hover:bg-[var(--color-y2k-lime)] hover:text-[var(--color-y2k-button-text)] transition-colors active:scale-95"
+            className="flex items-center gap-1 bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-lime) text-(--color-y2k-lime) px-3 py-1 text-[10px] font-black uppercase hover:bg-(--color-y2k-lime) hover:text-(--color-y2k-button-text) transition-colors active:scale-95"
             title="Force re-fetch from Azure"
           >
             <RefreshCw size={12} /> Refresh
@@ -209,7 +209,7 @@ const SummaryCard = ({
   color: string;
 }) => (
   <div
-    className="bg-[var(--color-y2k-bg-main)] border-4 p-4 sm:p-6 shadow-[5px_5px_0px_0px_#000]"
+    className="bg-(--color-y2k-bg-main) border-4 p-4 sm:p-6 shadow-[5px_5px_0px_0px_#000]"
     style={{ borderColor: color }}
   >
     <div className="flex justify-between items-center opacity-70 mb-2">

@@ -50,8 +50,8 @@ export const TrendCharts = ({ hourlyData, dailyRevenue }: Props) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* Grafik Jam Sibuk */}
-      <div className="bg-[var(--color-y2k-bg-main)] border-4 border-[var(--color-y2k-lime)] p-6 shadow-[6px_6px_0px_0px_var(--color-y2k-lime)]">
-        <h3 className="text-[var(--color-y2k-lime)] font-black uppercase text-sm mb-6 italic tracking-widest">
+      <div className="bg-(--color-y2k-bg-main) border-4 border-(--color-y2k-lime) p-6 shadow-[6px_6px_0px_0px_var(--color-y2k-lime)]">
+        <h3 className="text-(--color-y2k-lime) font-black uppercase text-sm mb-6 italic tracking-widest">
           Peak_Hours_Analysis (24h)
         </h3>
         <div className="h-64 w-full" ref={barRef}>
@@ -92,8 +92,8 @@ export const TrendCharts = ({ hourlyData, dailyRevenue }: Props) => {
       </div>
 
       {/* Grafik Tren Pendapatan */}
-      <div className="bg-[var(--color-y2k-bg-main)] border-4 border-[var(--color-y2k-purple)] p-6 shadow-[6px_6px_0px_0px_var(--color-y2k-purple)]">
-        <h3 className="text-[var(--color-y2k-purple)] font-black uppercase text-sm mb-6 italic tracking-widest">
+      <div className="bg-(--color-y2k-bg-main) border-4 border-(--color-y2k-purple) p-6 shadow-[6px_6px_0px_0px_var(--color-y2k-purple)]">
+        <h3 className="text-(--color-y2k-purple) font-black uppercase text-sm mb-6 italic tracking-widest">
           Revenue_Trend_Daily
         </h3>
         <div className="h-64 w-full" ref={lineRef}>

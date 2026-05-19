@@ -87,7 +87,7 @@ export default function DashboardPage() {
 
   if (authLoading || !authUser || !localUserProfile) {
     return (
-      <div className="min-h-screen bg-[var(--color-y2k-bg-main)] flex items-center justify-center font-mono text-[var(--color-y2k-lime)]">
+      <div className="min-h-screen bg-(--color-y2k-bg-main) flex items-center justify-center font-mono text-(--color-y2k-lime)">
         INITIALIZING_SESSION...
       </div>
     );
@@ -112,7 +112,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-y2k-bg-main)] text-[var(--color-y2k-text-main)] font-mono flex overflow-hidden">
+    <div className="min-h-screen bg-(--color-y2k-bg-main) text-(--color-y2k-text-main) font-mono flex overflow-hidden">
       <Sidebar
         isOpen={sidebarOpen}
         activeTab={activeTab}
@@ -160,7 +160,7 @@ export default function DashboardPage() {
                     headerAction={
                       <button
                         onClick={() => refresh()}
-                        className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-[var(--color-y2k-lime)] text-[var(--color-y2k-lime)] text-[10px] font-black uppercase tracking-wider hover:bg-[var(--color-y2k-lime)]/10 transition-all"
+                        className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-(--color-y2k-lime) text-(--color-y2k-lime) text-[10px] font-black uppercase tracking-wider hover:bg-(--color-y2k-lime)/10 transition-all"
                       >
                         Refresh
                       </button>
@@ -175,10 +175,10 @@ export default function DashboardPage() {
                       occupancyRate={occupancyRate}
                     />
 
-                    <div className="mt-6 sm:mt-8 bg-[var(--color-y2k-border)]/20 p-3 sm:p-4 border-l-4 border-[var(--color-y2k-lime)] flex flex-col gap-2">
+                    <div className="mt-6 sm:mt-8 bg-(--color-y2k-border)/20 p-3 sm:p-4 border-l-4 border-(--color-y2k-lime) flex flex-col gap-2">
                       <div className="flex items-center gap-3 text-[10px] font-bold">
-                        <div className="w-2 h-2 bg-[var(--color-y2k-lime)] animate-pulse"></div>
-                        <span className="text-[var(--color-y2k-lime)] uppercase italic">
+                        <div className="w-2 h-2 bg-(--color-y2k-lime) animate-pulse"></div>
+                        <span className="text-(--color-y2k-lime) uppercase italic">
                           IoT_Stream: Node_A {" > "} Cloud_Gateway
                         </span>
                       </div>

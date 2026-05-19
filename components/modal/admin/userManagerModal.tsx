@@ -122,7 +122,7 @@ export default function UserManagerModal({
 
             {/* Username Field */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase italic text-[var(--color-y2k-text-muted)]">
+              <label className="text-[10px] font-bold uppercase italic text-(--color-y2k-text-muted)">
                 User_Identity
               </label>
               <input
@@ -132,7 +132,7 @@ export default function UserManagerModal({
                 onChange={handleInputChange}
                 disabled={submitting || loading}
                 placeholder="Enter username"
-                className="w-full px-4 py-2 bg-[var(--color-y2k-bg-main)] border-2 border-[var(--color-y2k-border)] text-[var(--color-y2k-lime)] font-bold text-[11px] placeholder-gray-600 focus:border-[var(--color-y2k-purple)] focus:outline-none disabled:opacity-50"
+                className="w-full px-4 py-2 bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-border) text-(--color-y2k-lime) font-bold text-[11px] placeholder-gray-600 focus:border-(--color-y2k-purple) focus:outline-none disabled:opacity-50"
               />
             </div>
 
@@ -140,7 +140,7 @@ export default function UserManagerModal({
             {!isEditMode || true ? (
               <>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase italic text-[var(--color-y2k-text-muted)]">
+                  <label className="text-[10px] font-bold uppercase italic text-(--color-y2k-text-muted)">
                     {isEditMode ? "New_Password" : "Password"}
                     {isEditMode && (
                       <span className="text-gray-500 ml-2">
@@ -159,13 +159,13 @@ export default function UserManagerModal({
                         ? "Leave blank to keep current password"
                         : "Enter password"
                     }
-                    className="w-full px-4 py-2 bg-[var(--color-y2k-bg-main)] border-2 border-[var(--color-y2k-border)] text-[var(--color-y2k-lime)] font-bold text-[11px] placeholder-gray-600 focus:border-[var(--color-y2k-purple)] focus:outline-none disabled:opacity-50"
+                    className="w-full px-4 py-2 bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-border) text-(--color-y2k-lime) font-bold text-[11px] placeholder-gray-600 focus:border-(--color-y2k-purple) focus:outline-none disabled:opacity-50"
                   />
                 </div>
 
                 {/* Confirm Password Field */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase italic text-[var(--color-y2k-text-muted)]">
+                  <label className="text-[10px] font-bold uppercase italic text-(--color-y2k-text-muted)">
                     Confirm_Password
                   </label>
                   <input
@@ -175,7 +175,7 @@ export default function UserManagerModal({
                     onChange={handleInputChange}
                     disabled={submitting || loading}
                     placeholder="Confirm password"
-                    className="w-full px-4 py-2 bg-[var(--color-y2k-bg-main)] border-2 border-[var(--color-y2k-border)] text-[var(--color-y2k-lime)] font-bold text-[11px] placeholder-gray-600 focus:border-[var(--color-y2k-purple)] focus:outline-none disabled:opacity-50"
+                    className="w-full px-4 py-2 bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-border) text-(--color-y2k-lime) font-bold text-[11px] placeholder-gray-600 focus:border-(--color-y2k-purple) focus:outline-none disabled:opacity-50"
                   />
                 </div>
               </>
@@ -183,11 +183,11 @@ export default function UserManagerModal({
 
             {/* Role Field */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase italic text-[var(--color-y2k-text-muted)]">
+              <label className="text-[10px] font-bold uppercase italic text-(--color-y2k-text-muted)">
                 Access_Role
               </label>
               {isEditMode ? (
-                <div className="w-full px-4 py-2 bg-[var(--color-y2k-bg-main)] border-2 border-[var(--color-y2k-border)] text-[var(--color-y2k-purple)] font-bold text-[11px] flex items-center">
+                <div className="w-full px-4 py-2 bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-border) text-(--color-y2k-purple) font-bold text-[11px] flex items-center">
                   {formData.role.charAt(0).toUpperCase() +
                     formData.role.slice(1)}
                 </div>
@@ -199,7 +199,7 @@ export default function UserManagerModal({
                   disabled={submitting || loading}
                   aria-label="Access Role"
                   title="Select user access role"
-                  className="w-full px-4 py-2 bg-[var(--color-y2k-bg-main)] border-2 border-[var(--color-y2k-border)] text-[var(--color-y2k-lime)] font-bold text-[11px] focus:border-[var(--color-y2k-purple)] focus:outline-none disabled:opacity-50"
+                  className="w-full px-4 py-2 bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-border) text-(--color-y2k-lime) font-bold text-[11px] focus:border-(--color-y2k-purple) focus:outline-none disabled:opacity-50"
                 >
                   <option value="guest">Guest</option>
                   <option value="operator">Operator</option>
@@ -213,7 +213,7 @@ export default function UserManagerModal({
               <button
                 type="submit"
                 disabled={submitting || loading}
-                className="flex-1 bg-[var(--color-y2k-lime)] text-[var(--color-y2k-button-text)] font-black py-2 border-2 border-[var(--color-y2k-solid-border)] shadow-[3px_3px_0px_0px_var(--color-y2k-purple)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-(--color-y2k-lime) text-(--color-y2k-button-text) font-black py-2 border-2 border-(--color-y2k-solid-border) shadow-[3px_3px_0px_0px_var(--color-y2k-purple)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting || loading
                   ? "Processing..."
@@ -225,7 +225,7 @@ export default function UserManagerModal({
                 type="button"
                 onClick={onClose}
                 disabled={submitting || loading}
-                className="flex-1 bg-gray-700 text-[var(--color-y2k-text-main)] font-black py-2 border-2 border-gray-600 hover:bg-gray-600 transition-colors uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-gray-700 text-(--color-y2k-text-main) font-black py-2 border-2 border-gray-600 hover:bg-gray-600 transition-colors uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
@@ -238,7 +238,7 @@ export default function UserManagerModal({
             disabled={submitting || loading}
             aria-label="Close modal"
             title="Close modal"
-            className="absolute top-3 right-3 text-gray-500 hover:text-[var(--color-y2k-text-main)] transition-colors disabled:opacity-50"
+            className="absolute top-3 right-3 text-gray-500 hover:text-(--color-y2k-text-main) transition-colors disabled:opacity-50"
           >
             <X size={20} />
           </button>
