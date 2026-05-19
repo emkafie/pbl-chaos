@@ -14,6 +14,7 @@ interface HeaderProps {
   };
   onNavigate: (tab: string) => void;
   onLogout: () => void;
+  onOpenNotifications?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -23,6 +24,7 @@ const Header: React.FC<HeaderProps> = ({
   userProfile,
   onNavigate,
   onLogout,
+  onOpenNotifications,
 }) => {
   return (
     <header className="h-16 sm:h-20 border-b-4 border-[#4D4D4D] flex items-center justify-between px-4 sm:px-8 bg-[#1A1A1A] shrink-0">
@@ -45,6 +47,7 @@ const Header: React.FC<HeaderProps> = ({
             userProfile={userProfile}
             onNavigate={onNavigate}
             onLogout={onLogout}
+            onOpenNotifications={onOpenNotifications}
           />
         )}
       </div>

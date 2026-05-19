@@ -40,3 +40,15 @@ export interface ChartData {
   name: string;
   value: number;
 }
+
+export type NotificationSeverity = 'low' | 'moderate' | 'critical';
+
+export interface Notification {
+  id?: string;
+  message: string;
+  severity: NotificationSeverity;
+  senderRole: UserRole;
+  receiverRole: UserRole;
+  createdAt: string;
+  isRead: boolean;
+}

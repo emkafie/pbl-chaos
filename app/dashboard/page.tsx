@@ -13,6 +13,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import AnalyticsTab from "@/components/admin/analyticsTab";
 import UserManagerTab from "@/components/admin/userManager";
 import OperatorNotesModal from "@/components/modal/operatorNotes";
+import NotificationsModal from "@/components/modal/NotificationsModal";
 import ProfileTab from "@/components/profile/ProfileTab";
 import SettingsTab from "@/components/profile/SettingsTab";
 import { useParkingSlots } from "@/app/lib/useParkingSlots";
@@ -25,6 +26,7 @@ export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const {
     slots,
     loading,
@@ -101,6 +103,8 @@ export default function DashboardPage() {
         return "USER_PROFILE";
       case "settings":
         return "USER_SETTINGS";
+      case "notifications":
+        return "NOTIFICATIONS_CENTER";
       default:
         return activeTab.toUpperCase() + "_MODULE";
     }
@@ -124,6 +128,7 @@ export default function DashboardPage() {
           userProfile={userProfile}
           onNavigate={handleNavigate}
           onLogout={handleLogout}
+          onOpenNotifications={() => setIsNotificationsOpen(true)}
         />
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
@@ -226,6 +231,14 @@ export default function DashboardPage() {
         {/* Modal Layer */}
         {isModalOpen && (
           <OperatorNotesModal onClose={() => setIsModalOpen(false)} />
+        )}
+
+        {/* Notifications Modal */}
+        {isNotificationsOpen && (
+          <NotificationsModal
+            onClose={() => setIsNotificationsOpen(false)}
+            role={isAdmin ? "admin" : "operator"}
+          />
         )}
       </main>
     </div>
