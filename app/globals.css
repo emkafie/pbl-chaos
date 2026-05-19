@@ -11,6 +11,7 @@
     --y2k-purple: #BA8CFF;
     --y2k-button-text: #1A1A1A;
     --y2k-solid-border: #1A1A1A;
+    --y2k-red: #da110b;
   }
 
   .bright-theme {
@@ -36,6 +37,7 @@
   --color-y2k-purple: var(--y2k-purple);
   --color-y2k-button-text: var(--y2k-button-text);
   --color-y2k-solid-border: var(--y2k-solid-border);
+  --color-y2k-red: var(--y2k-red);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

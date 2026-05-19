@@ -137,7 +137,7 @@ export default function AnalyticsPage() {
             style={{
               backgroundColor:
                 dataSource === "azure-blob" ? "var(--color-y2k-purple)" : "var(--color-y2k-border)",
-              color: "var(--color-y2k-solid-border)",
+              color: "var(--color-y2k-button-text)",
             }}
           >
             {dataSource === "azure-blob" ? "⚡ Azure_Blob" : "📁 Local_JSON"}

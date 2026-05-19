@@ -19,22 +19,22 @@ interface SlotGridProps {
 // Mapping color by slot status
 const STATUS_STYLES: Record<SlotStatus, { border: string; bg: string; text: string; fill: string }> = {
   available: {
-    border: 'border-[var(--color-y2k-lime)]',
-    bg: 'bg-[var(--color-y2k-lime)]/10',
-    text: 'text-[var(--color-y2k-lime)]',
+    border: 'border-(--color-y2k-lime)',
+    bg: 'bg-(--color-y2k-lime)/10',
+    text: 'text-(--color-y2k-lime)',
     fill: 'transparent',
   },
   occupied: {
-    border: 'border-[var(--color-y2k-purple)]',
-    bg: 'bg-[var(--color-y2k-purple)]/10',
-    text: 'text-[var(--color-y2k-purple)]',
+    border: 'border-(--color-y2k-purple)',
+    bg: 'bg-(--color-y2k-purple)/10',
+    text: 'text-(--color-y2k-purple)',
     fill: 'var(--color-y2k-purple)',
   },
   maintenance: {
-    border: 'border-[#FFD600]',
-    bg: 'bg-[#FFD600]/10',
-    text: 'text-[#FFD600]',
-    fill: '#FFD600',
+    border: 'border-(--color-y2k-red)',
+    bg: 'bg-(--color-y2k-red)/10',
+    text: 'text-(--color-y2k-red)',
+    fill: 'var(--color-y2k-red)',
   },
 };
 
@@ -54,7 +54,7 @@ const SlotGrid: React.FC<SlotGridProps> = ({
     <div className="space-y-6">
       {/* Edit Mode Indicator */}
       {isEditing && (
-        <div className="flex items-center gap-2 px-3 py-2 border-2 border-dashed border-[#FFD600] bg-[#FFD600]/5 text-[#FFD600] text-[10px] font-black uppercase tracking-widest animate-pulse">
+        <div className="flex items-center gap-2 px-3 py-2 border-2 border-dashed border-(--color-y2k-lime) bg-y2k-lime/5 text-(--color-y2k-lime) text-[10px] font-black uppercase tracking-widest animate-pulse">
           <Wrench size={14} />
           <span>
             Edit Mode Active — Click slot to set to{' '}
@@ -78,7 +78,7 @@ const SlotGrid: React.FC<SlotGridProps> = ({
                 slot.status === 'occupied' || slot.status === 'maintenance' ? 'opacity-80' : ''
               } ${
                 isEditing
-                  ? 'cursor-pointer transform hover:scale-110 hover:ring-2 hover:ring-[#FFD600] hover:ring-offset-2 hover:ring-offset-[var(--color-y2k-solid-border)]'
+                  ? 'cursor-pointer transform hover:scale-110 hover:ring-2 hover:ring-(--color-y2k-lime) hover:ring-offset-2'
                   : 'cursor-default'
               }`}
             >
@@ -97,31 +97,31 @@ const SlotGrid: React.FC<SlotGridProps> = ({
       </div>
 
       {/* Status Panel */}
-      <div className="p-4 border-2 border-[var(--color-y2k-border)] bg-[var(--color-y2k-border)]/10">
-        <p className="text-[11px] font-bold text-[var(--color-y2k-text-muted)] uppercase mb-4 tracking-tighter">
+      <div className="p-4 border-2 border-(--color-y2k-border) bg-y2k-border/10">
+        <p className="text-[11px] font-bold text-(--color-y2k-text-muted) uppercase mb-4 tracking-tighter">
           Current Slot Occupancy Rate
         </p>
-        <div className="h-4 w-full bg-[var(--color-y2k-bg-main)] border-2 border-[var(--color-y2k-border)] overflow-hidden relative">
+        <div className="h-4 w-full bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-border) overflow-hidden relative">
           <div
-            className="h-full bg-[var(--color-y2k-lime)] transition-all duration-1000"
+            className="h-full bg-(--color-y2k-lime) transition-all duration-1000"
             style={{ width: `${occupancyRate}%` }}
           ></div>
-          <span className="absolute right-2 top-0 text-[10px] font-black text-[var(--color-y2k-text-main)] mix-blend-difference">
+          <span className="absolute right-2 top-0 text-[10px] font-black text-(--color-y2k-text-main) mix-blend-difference">
             {occupancyRate.toFixed(1)}%
           </span>
         </div>
         <div className="mt-4 flex flex-wrap gap-4 sm:gap-6 text-[10px] font-black uppercase tracking-widest">
-          <span className="flex items-center gap-1 text-[var(--color-y2k-lime)]">
-            <div className="w-2 h-2 bg-[var(--color-y2k-lime)]"></div>
+          <span className="flex items-center gap-1 text-(--color-y2k-lime)">
+            <div className="w-2 h-2 bg-(--color-y2k-lime)"></div>
             {availableSlots.toString().padStart(2, '0')} Available
           </span>
-          <span className="flex items-center gap-1 text-[var(--color-y2k-purple)]">
-            <div className="w-2 h-2 bg-[var(--color-y2k-purple)]"></div>
+          <span className="flex items-center gap-1 text-(--color-y2k-purple)">
+            <div className="w-2 h-2 bg-(--color-y2k-purple)"></div>
             {occupiedSlots.toString().padStart(2, '0')} Occupied
           </span>
           {maintenanceSlots > 0 && (
-            <span className="flex items-center gap-1 text-[#FFD600]">
-              <div className="w-2 h-2 bg-[#FFD600]"></div>
+            <span className="flex items-center gap-1 text-(--color-y2k-red)">
+              <div className="w-2 h-2 bg-(--color-y2k-red)"></div>
               {maintenanceSlots.toString().padStart(2, '0')} Maintenance
             </span>
           )}

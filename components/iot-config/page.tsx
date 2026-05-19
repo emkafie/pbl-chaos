@@ -274,18 +274,18 @@ export default function IotConfigPage() {
   };
 
   return (
-    <div className="p-0 space-y-8 font-mono text-[var(--color-y2k-text-main)] selection:bg-[var(--color-y2k-lime)] selection:text-[var(--color-y2k-button-text)]">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b-4 border-[var(--color-y2k-border)] pb-6">
+    <div className="p-0 space-y-8 font-mono text-(--color-y2k-text-main) selection:bg-(--color-y2k-lime) selection:text-(--color-y2k-button-text)">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b-4 border-(--color-y2k-border) pb-6">
         <div>
-          <span className="text-[10px] text-[var(--color-y2k-purple)] font-black uppercase tracking-[0.3em]">
+          <span className="text-[10px] text-(--color-y2k-purple) font-black uppercase tracking-[0.3em]">
             Alternatif_Pengujian_Perangkat_Keras
           </span>
-          <h1 className="text-3xl font-black text-[var(--color-y2k-lime)] italic uppercase tracking-tighter flex items-center gap-2">
+          <h1 className="text-3xl font-black text-(--color-y2k-lime) italic uppercase tracking-tighter flex items-center gap-2">
             <Settings size={28} /> IoT Config & Emulator
           </h1>
         </div>
         <div className="flex gap-2">
-          <div className="bg-[var(--color-y2k-bg-main)] border-2 border-[var(--color-y2k-border)] px-4 py-1 text-center">
+          <div className="bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-border) px-4 py-1 text-center">
             <p className="text-[8px] text-gray-500 uppercase">
               Status Prototipe
             </p>
@@ -300,13 +300,13 @@ export default function IotConfigPage() {
         {/* KIRI: MQTTX LOG PASTER & PANEL AKSI */}
         <div className="lg:col-span-6 space-y-8">
           <Y2KCard title="MQTTX Log Importer" variant="purple">
-            <p className="text-[10px] text-[var(--color-y2k-text-muted)] mb-4 uppercase leading-relaxed font-bold">
+            <p className="text-[10px] text-(--color-y2k-text-muted) mb-4 uppercase leading-relaxed font-bold">
               Salin log history dari MQTTX (yang memuat baris Topic, JSON
               Payload, dan Timestamp) lalu paste di bawah:
             </p>
 
             <textarea
-              className="w-full h-48 bg-[var(--color-y2k-bg-panel)] border-2 border-[var(--color-y2k-purple)] p-4 text-xs font-mono text-[var(--color-y2k-lime)] focus:outline-none focus:border-[var(--color-y2k-lime)] placeholder:text-gray-700"
+              className="w-full h-48 bg-(--color-y2k-bg-panel) border-2 border-(--color-y2k-purple) p-4 text-xs font-mono text-(--color-y2k-lime) focus:outline-none focus:border-(--color-y2k-lime) placeholder:text-gray-700"
               placeholder='Topic: parking/gate/statusQoS: 0&#10;{"slot_counter":0,...}&#10;2026-05-19 16:01:33:934'
               value={rawLogsInput}
               onChange={(e) => setRawLogsInput(e.target.value)}
@@ -315,14 +315,14 @@ export default function IotConfigPage() {
 
             <div className="mt-4 flex flex-wrap gap-4">
               <Y2KButton
-                className="!py-2 !px-4 !text-xs"
+                className="py-2! px-4! text-xs!"
                 onClick={handleParseLogs}
                 disabled={isReplaying}
               >
                 <RefreshCw size={14} className="inline mr-1" /> Parse_Data
               </Y2KButton>
               <Y2KButton
-                className="!py-2 !px-4 !text-xs"
+                className="py-2! px-4! text-xs!"
                 onClick={handleClearAll}
                 variant="outline"
                 disabled={isReplaying}
@@ -339,11 +339,11 @@ export default function IotConfigPage() {
                 Timeline_Parsed: {parsedEvents.length} Event
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-[9px] text-[var(--color-y2k-text-muted)] font-bold uppercase">
+                <span className="text-[9px] text-(--color-y2k-text-muted) font-bold uppercase">
                   Kecepatan:
                 </span>
                 <select
-                  className="bg-[var(--color-y2k-solid-border)] border border-[var(--color-y2k-border)] text-xs text-[var(--color-y2k-lime)] px-2 py-0.5 focus:outline-none"
+                  className="bg-(--color-y2k-lime/10) border border-(--color-y2k-border) text-xs text-(--color-y2k-lime) px-2 py-0.5 focus:outline-none"
                   value={simulationDelay}
                   onChange={(e) => setSimulationDelay(Number(e.target.value))}
                   disabled={isReplaying}
@@ -355,7 +355,7 @@ export default function IotConfigPage() {
               </div>
             </div>
 
-            <div className="h-48 overflow-y-auto border-2 border-[var(--color-y2k-border)] bg-[var(--color-y2k-bg-panel)] p-2 space-y-2">
+            <div className="h-48 overflow-y-auto border-2 border-(--color-y2k-border) bg-(--color-y2k-bg-panel) p-2 space-y-2">
               {parsedEvents.length === 0 ? (
                 <div className="text-gray-600 text-[10px] uppercase font-bold p-2 text-center italic">
                   Belum ada log yang dimasukkan. Silakan paste dan klik Parse
@@ -370,14 +370,14 @@ export default function IotConfigPage() {
                       key={index}
                       className={`p-2 border text-[9px] flex justify-between items-center transition-all ${
                         isActive
-                          ? "border-[var(--color-y2k-lime)] bg-[var(--color-y2k-lime)]/10 text-[var(--color-y2k-text-main)] font-black"
+                          ? "border-(--color-y2k-lime) bg-(--color-y2k-lime/10) text-(--color-y2k-text-main) font-black"
                           : isFinished
                             ? "border-gray-800 text-gray-600 line-through"
-                            : "border-[var(--color-y2k-border)] text-[var(--color-y2k-text-muted)]"
+                            : "border-(--color-y2k-border) text-(--color-y2k-text-muted)"
                       }`}
                     >
                       <div className="truncate pr-2">
-                        <span className="text-[var(--color-y2k-purple)] font-bold">
+                        <span className="text-y2k-purple font-bold">
                           [{event.topic}]
                         </span>{" "}
                         {JSON.stringify(event.payload)}
@@ -395,7 +395,7 @@ export default function IotConfigPage() {
               <button
                 onClick={handleStartReplay}
                 disabled={isReplaying || parsedEvents.length === 0}
-                className="w-full bg-[var(--color-y2k-lime)] text-[var(--color-y2k-button-text)] font-black py-3 border-2 border-[var(--color-y2k-solid-border)] shadow-[4px_4px_0px_0px_var(--color-y2k-purple)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-y2k-lime text-y2k-button-text font-black py-3 border-2 border-y2k-solid-border shadow-[4px_4px_0px_0px_var(--color-y2k-purple)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Play size={14} className="inline mr-1" />{" "}
                 {isReplaying ? "Mengeksekusi..." : "Jalankan Simulasi Skenario"}
@@ -408,36 +408,36 @@ export default function IotConfigPage() {
         <div className="lg:col-span-6 space-y-8">
           <Y2KCard title="Monitor Hardware Virtual" variant="lime">
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="p-3 border-2 border-[var(--color-y2k-border)] bg-[var(--color-y2k-solid-border)]">
+              <div className="p-3 border-2 border-(--color-y2k-border) bg-(--color-y2k-lime/10)">
                 <p className="text-[8px] text-gray-500 uppercase font-black">
                   Pintu_Masuk
                 </p>
                 <span
-                  className={`text-sm font-black italic uppercase ${gateMasuk === "BUKA" ? "text-[var(--color-y2k-lime)]" : "text-red-500"}`}
+                  className={`text-sm font-black italic uppercase ${gateMasuk === "BUKA" ? "text-y2k-lime" : "text-red-500"}`}
                 >
                   {gateMasuk}
                 </span>
               </div>
-              <div className="p-3 border-2 border-[var(--color-y2k-border)] bg-[var(--color-y2k-solid-border)]">
+              <div className="p-3 border-2 border-(--color-y2k-border) bg-(--color-y2k-lime/10)">
                 <p className="text-[8px] text-gray-500 uppercase font-black">
                   Pintu_Keluar
                 </p>
                 <span
-                  className={`text-sm font-black italic uppercase ${gateKeluar === "BUKA" ? "text-[var(--color-y2k-lime)]" : "text-red-500"}`}
+                  className={`text-sm font-black italic uppercase ${gateKeluar === "BUKA" ? "text-y2k-lime" : "text-red-500"}`}
                 >
                   {gateKeluar}
                 </span>
               </div>
             </div>
 
-            <div className="p-4 border-2 border-[var(--color-y2k-border)] bg-[var(--color-y2k-bg-panel)] space-y-2 mb-6">
-              <div className="flex justify-between text-[10px] font-black border-b border-[var(--color-y2k-border)] pb-1">
+            <div className="p-4 border-2 border-(--color-y2k-border) bg-y2k-bg-panel space-y-2 mb-6">
+              <div className="flex justify-between text-[10px] font-black border-b border-(--color-y2k-border) pb-1">
                 <span>Total Aktif (RFID):</span>
-                <span className="text-[var(--color-y2k-lime)]">{slotCounter} Unit</span>
+                <span className="text-(--color-y2k-lime)">{slotCounter} Unit</span>
               </div>
               <div className="flex justify-between text-[10px] font-black">
                 <span>Daftar UID di Dalam:</span>
-                <span className="text-[var(--color-y2k-purple)] truncate max-w-[200px]">
+                <span className="text-y2k-purple truncate max-w-[200px]">
                   {kendaraanDalam.length > 0
                     ? kendaraanDalam.join(", ")
                     : "KOSONG"}
@@ -447,8 +447,8 @@ export default function IotConfigPage() {
           </Y2KCard>
 
           {/* SIMULASI CONSOLE LOGS */}
-          <div className="bg-[var(--color-y2k-bg-panel)] border-4 border-[var(--color-y2k-border)] p-6 shadow-[6px_6px_0px_0px_var(--color-y2k-bg-panel)]">
-            <h3 className="text-[var(--color-y2k-lime)] text-xs font-black uppercase mb-4 tracking-wider flex items-center gap-2">
+          <div className="bg-y2k-bg-panel border-4 border-y2k-border p-6 shadow-[6px_6px_0px_0px_var(--color-y2k-bg-panel)]">
+            <h3 className="text-y2k-lime text-xs font-black uppercase mb-4 tracking-wider flex items-center gap-2">
               <Terminal size={14} /> Konsol Terminal Emulator
             </h3>
             <div className="h-44 overflow-y-auto space-y-2 text-[9px] pr-2 scrollbar-thin scrollbar-thumb-gray-800">
@@ -465,7 +465,7 @@ export default function IotConfigPage() {
                         log.includes("[ERROR]")
                           ? "text-red-500"
                           : log.includes("[DB_SUCCESS]")
-                            ? "text-[var(--color-y2k-lime)]"
+                            ? "text-y2k-lime"
                             : "text-gray-300"
                       }
                     >

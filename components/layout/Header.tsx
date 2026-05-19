@@ -30,16 +30,16 @@ const Header: React.FC<HeaderProps> = ({
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="h-16 sm:h-20 border-b-4 border-[var(--color-y2k-border)] flex items-center justify-between px-4 sm:px-8 bg-[var(--color-y2k-bg-main)] shrink-0">
+    <header className="h-16 sm:h-20 border-b-4 border-(--color-y2k-border) flex items-center justify-between px-4 sm:px-8 bg-(--color-y2k-bg-main) shrink-0">
       <div className="flex items-center gap-3 sm:gap-4 min-w-0">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 border-2 border-[var(--color-y2k-lime)] text-[var(--color-y2k-lime)] hover:bg-[var(--color-y2k-lime)] hover:text-[var(--color-y2k-button-text)] transition-all shrink-0"
+          className="p-2 border-2 border-(--color-y2k-lime) text-(--color-y2k-lime) hover:bg-(--color-y2k-lime) hover:text-(--color-y2k-button-text) transition-all shrink-0"
           aria-label="Toggle sidebar"
         >
           {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
-        <h2 className="text-[var(--color-y2k-lime)] font-black text-sm sm:text-xl uppercase italic tracking-tighter text-ellipsis">
+        <h2 className="text-(--color-y2k-lime) font-black text-sm sm:text-xl uppercase italic tracking-tighter text-ellipsis">
           {title}
         </h2>
       </div>
@@ -47,7 +47,7 @@ const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center gap-3 sm:gap-4 shrink-0">
         <button
           onClick={toggleTheme}
-          className="p-2 border-2 border-[var(--color-y2k-border)] text-[var(--color-y2k-text-muted)] hover:bg-[var(--color-y2k-border)]/20 hover:text-[var(--color-y2k-text-main)] transition-all rounded-full"
+          className="p-2 border-2 border-(--color-y2k-border) text-(--color-y2k-text-main) hover:bg-y2k-lime)/20 hover:text-(--color-y2k-text-main) transition-all rounded-full"
           title="Toggle Theme"
         >
           {theme === "bright" ? <Moon size={18} /> : <Sun size={18} />}

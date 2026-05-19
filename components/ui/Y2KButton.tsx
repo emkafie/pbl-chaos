@@ -6,11 +6,11 @@ const Y2KButton = ({
   className = "",
 }: any) => {
   const styles: any = {
-    lime: "bg-[var(--color-y2k-lime)] text-[var(--color-y2k-button-text)] border-[var(--color-y2k-solid-border)] shadow-[4px_4px_0px_0px_var(--color-y2k-purple)]",
+    lime: "bg-(--color-y2k-lime) text-(--color-y2k-button-text) border-(--color-y2k-solid-border) shadow-[4px_4px_0px_0px_(--color-y2k-purple)]",
     purple:
-      "bg-[var(--color-y2k-purple)] text-[var(--color-y2k-button-text)] border-[var(--color-y2k-solid-border)] shadow-[4px_4px_0px_0px_var(--color-y2k-lime)]",
+      "bg-(--color-y2k-purple) text-(--color-y2k-button-text) border-(--color-y2k-solid-border) shadow-[4px_4px_0px_0px_(--color-y2k-lime)]",
     outline:
-      "bg-transparent text-[var(--color-y2k-lime)] border-[var(--color-y2k-lime)] shadow-[4px_4px_0px_0px_var(--color-y2k-border)]",
+      "bg-transparent text-(--color-y2k-lime) border-(--color-y2k-lime) shadow-[4px_4px_0px_0px_(--color-y2k-border)]",
   };
 
   return (
