@@ -18,6 +18,7 @@ import ProfileTab from "@/components/profile/ProfileTab";
 import SettingsTab from "@/components/profile/SettingsTab";
 import { useParkingSlots } from "@/app/lib/useParkingSlots";
 import { RecentLogin } from "@/components/parking/recentLogin";
+import IotConfigPage from "@/components/iot-config/page";
 
 export default function DashboardPage() {
   const { user: authUser, loading: authLoading, signOut } = useAuth();
@@ -213,7 +214,7 @@ export default function DashboardPage() {
           )}
           {activeTab === "users" && <div>{isAdmin && <UserManagerTab />}</div>}
           {activeTab === "config" && (
-            <div>{isAdmin && <div>IoT Config Content</div>}</div>
+            <div>{isAdmin && <IotConfigPage />}</div>
           )}
 
           {/* Profile Tab */}
