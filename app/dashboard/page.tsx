@@ -19,17 +19,12 @@ import SettingsTab from "@/components/profile/SettingsTab";
 import { useParkingSlots } from "@/app/lib/useParkingSlots";
 import { RecentLogin } from "@/components/parking/recentLogin";
 import IotConfigPage from "@/components/iot-config/page";
+import { useMqttParking } from "@/hooks/useParkingMQTT";
 
 export default function DashboardPage() {
   const { user: authUser, loading: authLoading, signOut } = useAuth();
 
-  // Default to closed on mobile (md breakpoint = 768px)
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const {
-    slots,
+  const { slots,
     loading,
     error,
     totalSlots,
@@ -37,8 +32,31 @@ export default function DashboardPage() {
     occupiedSlots,
     maintenanceSlots,
     occupancyRate,
-    refresh,
-  } = useParkingSlots();
+    refresh, } = useParkingSlots();
+
+  const {
+    isAnomaly,
+    anomalyCount,
+    anomalyTimestamp,
+    anomalyMessage,
+    pendingAnomaly,
+    countdown,
+    slots: mqttSlots,
+    connected,
+    lastLog,
+    gateMasuk,
+    gateKeluar,
+    gateOnline,
+    slotOnline,
+    activeVehicles,
+    rfidActive,
+  } = useMqttParking(slots);
+
+  // Default to closed on mobile (md breakpoint = 768px)
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   // Local user profile state to allow updates from settings
   const [localUserProfile, setLocalUserProfile] = useState<UserProfile | null>(
@@ -135,12 +153,33 @@ export default function DashboardPage() {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
           {activeTab === "overview" && (
             <>
+              {/* STATUS EVALUASI ANOMALI (Fase Pending Debounce) */}
+              {pendingAnomaly && (
+                <div className="bg-[rgba(234,179,8,0.1)] border-4 border-yellow-500 text-yellow-500 p-4 font-black text-xs sm:text-sm shadow-[4px_4px_0px_0px_rgba(234,179,8,1)] flex items-center justify-between gap-4 uppercase mb-6 animate-pulse">
+                  <div className="flex items-center gap-2">
+                    <span>⚠️ EVALUASI ANOMALI: Selisih sensor terdeteksi. Menyaring noise ({countdown}s)...</span>
+                  </div>
+                </div>
+              )}
+
+              {/* PERINGATAN ANOMALI AKTIF */}
+              {isAnomaly && (
+                <div className="bg-[rgba(239,68,68,0.1)] border-4 border-red-500 text-red-500 p-4 font-black text-xs sm:text-sm shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] flex items-center justify-between gap-4 uppercase mb-6 animate-[pulse_1s_infinite]">
+                  <div className="flex items-center gap-2">
+                    <span>🔴 ANOMALI TERDETEKSI (Ada objek di slot {mqttSlots.filter(s => s.status === 'occupied').map(s => s.id).join(', ') || 'A01'} tanpa otorisasi kartu RFID!)</span>
+                  </div>
+                  <span className="text-[10px] opacity-75 shrink-0">{anomalyTimestamp}</span>
+                </div>
+              )}
+
               {isAdmin && (
                 <OverviewTab
                   role={userProfile.role}
                   onOpenModal={() => setIsModalOpen(true)}
                   totalSlots={totalSlots}
                   availableSlots={availableSlots}
+                  rfidActive={rfidActive}
+                  gateOnline={gateOnline}
                 />
               )}
               <div className="space-y-4 sm:space-y-6 md:space-y-8">
@@ -150,6 +189,8 @@ export default function DashboardPage() {
                     onOpenModal={() => setIsModalOpen(true)}
                     totalSlots={totalSlots}
                     availableSlots={availableSlots}
+                    rfidActive={rfidActive}
+                    gateOnline={gateOnline}
                   />
                 )}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mt-5">
