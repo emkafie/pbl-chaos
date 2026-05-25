@@ -169,6 +169,9 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
 
     client.on('connect', () => {
       setConnected(true);
+      if (typeof window !== 'undefined') {
+        (window as any).mqttClient = client;
+      }
       setLastLog(`CONNECTED_TO_BROKER_${MQTT_HOST.includes('hivemq') ? 'HIVEMQ_CLOUD' : 'EMQX'}`);
       
       client.subscribe('parking/slot/+');
@@ -327,7 +330,12 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
     });
 
     return () => {
-      if (client) client.end();
+      if (client) {
+        client.end();
+        if (typeof window !== 'undefined' && (window as any).mqttClient === client) {
+          (window as any).mqttClient = null;
+        }
+      }
     };
   }, []);
 
