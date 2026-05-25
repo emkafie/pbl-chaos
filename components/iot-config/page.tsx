@@ -1,18 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
-import {
-  Terminal,
-  Play,
-  Trash2,
-  CheckCircle,
-  AlertTriangle,
-  Database,
-  Cpu,
-  Wifi,
-  RefreshCw,
-  Clock,
-  Settings,
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Terminal, Settings, Cpu, Clock, RefreshCw, Key, ShieldAlert } from "lucide-react";
 import {
   collection,
   addDoc,
@@ -20,8 +8,12 @@ import {
   doc,
   updateDoc,
   serverTimestamp,
+  query,
+  where,
+  onSnapshot,
 } from "firebase/firestore";
-import { db, appId } from "@/app/lib/firebase";
+// Menggunakan jalur relatif untuk menghindari error resolusi alias
+import { db } from "@/app/lib/firebase"; 
 import Y2KButton from "@/components/ui/Y2KButton";
 import Y2KCard from "@/components/ui/Y2KCard";
 
@@ -32,452 +24,372 @@ interface MqttEvent {
   rawText: string;
 }
 
+interface ParkingSession {
+  id: string;
+  rfid_uid: string;
+  check_in: string;
+  status: string;
+  slot_id?: string;
+  vehicle_type?: string;
+  fee?: number;
+  duration_minutes?: number;
+}
+
 export default function IotConfigPage() {
   const [rawLogsInput, setRawLogsInput] = useState<string>("");
   const [parsedEvents, setParsedEvents] = useState<MqttEvent[]>([]);
   const [isReplaying, setIsReplaying] = useState<boolean>(false);
-  const [currentEventIndex, setCurrentEventIndex] = useState<number>(-1);
   const [simulationLogs, setSimulationLogs] = useState<string[]>([]);
-  const [simulationDelay, setSimulationDelay] = useState<number>(2000); // jeda antar event (ms)
+  const [simulationDelay, setSimulationDelay] = useState<number>(2000);
+  const [commandLog, setCommandLog] = useState<string>("Standby...");
+  
+  // Real-time ongoing sessions state
+  const [ongoingSessions, setOngoingSessions] = useState<ParkingSession[]>([]);
+  // Individual warp duration state mapping: sessionId -> duration in minutes
+  const [warpDurations, setWarpDurations] = useState<Record<string, number>>({});
 
-  // State Simulasi UI
-  const [gateMasuk, setGateMasuk] = useState<string>("TUTUP");
-  const [gateKeluar, setGateKeluar] = useState<string>("TUTUP");
-  const [slotCounter, setSlotCounter] = useState<number>(0);
-  const [kendaraanDalam, setKendaraanDalam] = useState<string[]>([]);
+  // Fetch ongoing sessions in real-time
+  useEffect(() => {
+    if (!db) return;
+    
+    const sessionsRef = collection(db, "sessions");
+    const q = query(sessionsRef, where("status", "==", "ongoing"));
+    
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const activeSessions: ParkingSession[] = [];
+        snapshot.forEach((docSnap) => {
+          activeSessions.push({
+            id: docSnap.id,
+            ...docSnap.data(),
+          } as ParkingSession);
+        });
+        // Sort by check-in time descending
+        activeSessions.sort((a, b) => new Date(b.check_in).getTime() - new Date(a.check_in).getTime());
+        setOngoingSessions(activeSessions);
+      },
+      (err) => {
+        console.error("Firestore Sync Error (Ongoing Sessions):", err);
+      }
+    );
 
-  // Sesi aktif lokal untuk mencocokkan waktu masuk/keluar saat simulasi database
-  const activeSessionsLocal = useRef<{ [uid: string]: string }>({});
+    return () => unsubscribe();
+  }, []);
 
-  // =====================================================================
-  // PARSER: Mengubah Teks MQTTX Mentah menjadi Array Object Event
-  // =====================================================================
+  const handlePublishCommand = (command: 'FORCE_OPEN' | 'FORCE_CLOSE') => {
+    const client = (window as any).mqttClient;
+    if (!client || !client.connected) {
+      setCommandLog("❌ ERROR: MQTT Client tidak terhubung di Dashboard.");
+      setSimulationLogs(prev => [`[OVERRIDE_FAIL] Client offline. Tidak bisa mengirim ${command}`, ...prev]);
+      return;
+    }
+    const topic = "parking/gate/command";
+    const payload = JSON.stringify({ command });
+    
+    client.publish(topic, payload);
+    setCommandLog(`⚡ Perintah ${command} berhasil dipublish.`);
+    setSimulationLogs(prev => [`[OVERRIDE] Command "${command}" sent to ${topic}`, ...prev]);
+  };
+
+  const handleSimulateCheckout = async (session: ParkingSession, durationMinutes: number) => {
+    try {
+      const now = new Date();
+      // Hitung check-in mundur ke belakang sesuai durasi time warp
+      const checkInTime = new Date(now.getTime() - durationMinutes * 60 * 1000);
+      const checkOutTime = now;
+      const fee = Math.ceil(durationMinutes / 60) * 5000;
+
+      // Update di Firestore
+      const sessionDocRef = doc(db, "sessions", session.id);
+      await updateDoc(sessionDocRef, {
+        status: "completed",
+        check_in: checkInTime.toISOString(),
+        check_out: checkOutTime.toISOString(),
+        duration_minutes: durationMinutes,
+        fee: fee,
+      });
+
+      // Tulis log keberhasilan
+      setSimulationLogs(prev => [
+        `[TIME_WARP_CHECKOUT] UID: ${session.rfid_uid} | Warped ${durationMinutes} mins | Fee: Rp${fee.toLocaleString("id-ID")}`,
+        ...prev
+      ]);
+
+      // Publish event checkout palsu ke MQTT agar hardware/sensor sinkron
+      const client = (window as any).mqttClient;
+      if (client && client.connected) {
+        client.publish("parking/gate/event", JSON.stringify({
+          event: "KELUAR_DIIZINKAN",
+          uid: session.rfid_uid
+        }));
+      }
+    } catch (e: any) {
+      console.error("Simulation checkout error:", e);
+      setSimulationLogs(prev => [`[ERROR] Gagal memproses Time Warp Checkout: ${e.message}`, ...prev]);
+    }
+  };
+
   const handleParseLogs = () => {
     if (!rawLogsInput.trim()) return;
+    const lines = rawLogsInput.split("\n");
+    const events: MqttEvent[] = [];
+    let currentTopic = "", currentPayloadStr = "";
 
-    try {
-      // Pecah teks berdasarkan pemisah log MQTTX (baris baru ganda atau timestamp)
-      const lines = rawLogsInput.split("\n");
-      const events: MqttEvent[] = [];
-
-      let currentTopic = "";
-      let currentPayloadStr = "";
-      let currentTimestamp = "";
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-
-        // 1. Deteksi Baris Topic
-        if (line.startsWith("Topic: ")) {
-          // Bersihkan string topic (buang "QoS: 0" jika ada)
-          currentTopic = line
-            .replace("Topic: ", "")
-            .replace(/QoS:\s*\d+/, "")
-            .trim();
+    for (let line of lines) {
+      line = line.trim();
+      if (line.startsWith("Topic: ")) currentTopic = line.replace("Topic: ", "").trim();
+      else if (line.startsWith("{") && line.endsWith("}")) currentPayloadStr = line;
+      else if (/^\d{4}-\d{2}-\d{2}/.test(line)) {
+        if (currentTopic && currentPayloadStr) {
+          try {
+            events.push({ topic: currentTopic, payload: JSON.parse(currentPayloadStr), timestamp: line, rawText: "" });
+          } catch (e) {}
         }
-        // 2. Deteksi Baris JSON Payload
-        else if (line.startsWith("{") && line.endsWith("}")) {
-          currentPayloadStr = line;
-        }
-        // 3. Deteksi Baris Timestamp (Format tanggal di MQTTX)
-        else if (/^\d{4}-\d{2}-\d{2}/.test(line)) {
-          currentTimestamp = line;
-
-          // Jika topic dan payload sudah lengkap, masukkan ke daftar
-          if (currentTopic && currentPayloadStr) {
-            try {
-              const parsedPayload = JSON.parse(currentPayloadStr);
-              events.push({
-                topic: currentTopic,
-                payload: parsedPayload,
-                timestamp: currentTimestamp,
-                rawText: `Topic: ${currentTopic} | Payload: ${currentPayloadStr}`,
-              });
-            } catch (e) {
-              console.warn("Gagal parse JSON baris ini:", currentPayloadStr);
-            }
-          }
-          // Reset untuk pencarian event berikutnya
-          currentTopic = "";
-          currentPayloadStr = "";
-        }
+        currentTopic = ""; currentPayloadStr = "";
       }
-
-      // Urutkan event berdasarkan waktu dari yang terlama ke terbaru (kronologis)
-      setParsedEvents(events.reverse());
-      setSimulationLogs((prev) => [
-        `[SISTEM] Berhasil mem-parsing ${events.length} event dari MQTTX.`,
-        ...prev,
-      ]);
-    } catch (err) {
-      setSimulationLogs((prev) => [
-        "[ERROR] Format teks tidak didukung. Pastikan menyalin log MQTTX secara penuh.",
-        ...prev,
-      ]);
     }
+    setParsedEvents(events.reverse());
+    setSimulationLogs(prev => [`[PARSER] Berhasil memparsing ${events.length} event dari raw log.`, ...prev]);
   };
 
-  // =====================================================================
-  // REPLAYER: Menjalankan simulasi event satu per satu secara berurutan
-  // =====================================================================
   const handleStartReplay = async () => {
-    if (parsedEvents.length === 0 || isReplaying) return;
+    if (parsedEvents.length === 0) return;
     setIsReplaying(true);
-    setSimulationLogs((prev) => [
-      "[SIMULASI] Memulai jalannya replika hardware...",
-      ...prev,
-    ]);
+    setSimulationLogs(prev => [`[REPLAY] Memulai simulasi replay ${parsedEvents.length} event...`, ...prev]);
 
     for (let i = 0; i < parsedEvents.length; i++) {
-      setCurrentEventIndex(i);
-      const event = parsedEvents[i];
-      await executeSimulatedEvent(event);
-      // Jeda waktu antar event
-      await new Promise((resolve) => setTimeout(resolve, simulationDelay));
-    }
+      const { topic, payload } = parsedEvents[i];
+      let now = new Date();
+      const nowIso = now.toISOString();
 
-    setIsReplaying(false);
-    setCurrentEventIndex(-1);
-    setSimulationLogs((prev) => [
-      "[SIMULASI] Selesai menjalankan seluruh skenario riwayat.",
-      ...prev,
-    ]);
-  };
-
-  // =====================================================================
-  // EKSEKUSI EVENT SIMULASI (Sama seperti logika useMqttParking asli)
-  // =====================================================================
-  const executeSimulatedEvent = async (event: MqttEvent) => {
-    const { topic, payload } = event;
-    const nowIso = new Date().toISOString();
-
-    setSimulationLogs((prev) => [
-      `[REPLAY] ${topic} -> ${JSON.stringify(payload)}`,
-      ...prev,
-    ]);
-
-    // 1. Simulasi Status Gerbang (parking/gate/status)
-    if (topic === "parking/gate/status") {
-      setGateMasuk(payload.gate_masuk);
-      setGateKeluar(payload.gate_keluar);
-      setSlotCounter(payload.slot_counter);
-      setKendaraanDalam(payload.kendaraan_dalam || []);
-    }
-
-    // 2. Simulasi Event Transaksi (parking/gate/event) -> Uji tulis Firestore
-    else if (topic === "parking/gate/event") {
-      const { event: actionEvent, uid } = payload;
-
-      // Skenario Masuk
-      if (actionEvent === "MASUK_DIIZINKAN") {
-        setSimulationLogs((prev) => [
-          `[DB_PENDING] Membuat sesi masuk untuk UID: ${uid}`,
-          ...prev,
-        ]);
-
-        // Simpan waktu masuk ke memori replayer
-        activeSessionsLocal.current[uid] = nowIso;
-
-        if (db && appId) {
-          try {
-            const sessionPath = `sessions`;
-            await addDoc(collection(db, sessionPath), {
-              rfid_uid: uid,
-              vehicle_type: "car",
-              slot_id: "EMULATOR_SLOT",
+      if (topic === "parking/gate/event") {
+        try {
+          if (payload.event === "MASUK_DIIZINKAN") {
+            await addDoc(collection(db, "sessions"), {
+              rfid_uid: payload.uid,
               check_in: nowIso,
-              check_out: null,
-              duration_minutes: 0,
-              fee: 0,
               status: "ongoing",
-              created_at: serverTimestamp(),
+              fee: 0,
+              created_at: serverTimestamp()
             });
-            setSimulationLogs((prev) => [
-              `[DB_SUCCESS] Berhasil menulis sesi "ongoing" ke Firestore.`,
-              ...prev,
-            ]);
-          } catch (e) {
-            setSimulationLogs((prev) => [
-              `[DB_ERROR] Gagal menulis ke Firestore. Cek kredensial Anda.`,
-              ...prev,
-            ]);
-          }
-        }
-      }
-
-      // Skenario Keluar
-      else if (actionEvent === "KELUAR_DIIZINKAN") {
-        setSimulationLogs((prev) => [
-          `[DB_PENDING] Mencari sesi aktif untuk penutupan UID: ${uid}`,
-          ...prev,
-        ]);
-
-        if (db && appId) {
-          try {
-            const sessionPath = `sessions`;
-            const querySnapshot = await getDocs(collection(db, sessionPath));
-
-            let ongoingDocId = null;
-            let checkInTime = null;
-
-            querySnapshot.forEach((doc) => {
-              const data = doc.data();
-              if (data.rfid_uid === uid && data.status === "ongoing") {
-                ongoingDocId = doc.id;
-                checkInTime = data.check_in;
+            setSimulationLogs(prev => [`[REPLAY] Terdaftar Check-In UID: ${payload.uid}`, ...prev]);
+          } else if (payload.event === "KELUAR_DIIZINKAN") {
+            const q = await getDocs(collection(db, "sessions"));
+            q.forEach(async (docSnap) => {
+              if (docSnap.data().rfid_uid === payload.uid && docSnap.data().status === "ongoing") {
+                await updateDoc(doc(db, "sessions", docSnap.id), { 
+                  status: "completed", 
+                  check_out: nowIso, 
+                  fee: 5000 
+                });
               }
             });
-
-            if (ongoingDocId && checkInTime) {
-              const checkOutTime = nowIso;
-              const durationMs =
-                new Date(checkOutTime).getTime() -
-                new Date(checkInTime).getTime();
-              // Simulasikan minimal durasi 45 menit agar terlihat nyata di grafik analitik
-              const durationMinutes = Math.max(
-                45,
-                Math.round(durationMs / 60000),
-              );
-              const fee = Math.ceil(durationMinutes / 60) * 5000;
-
-              const docRef = doc(db, sessionPath, ongoingDocId);
-              await updateDoc(docRef, {
-                status: "completed",
-                check_out: checkOutTime,
-                duration_minutes: durationMinutes,
-                fee: fee,
-              });
-
-              setSimulationLogs((prev) => [
-                `[DB_SUCCESS] Sesi UID ${uid} diperbarui menjadi "completed" (Biaya: Rp ${fee}).`,
-                ...prev,
-              ]);
-            } else {
-              setSimulationLogs((prev) => [
-                `[DB_WARN] Tidak ditemukan sesi ongoing untuk UID ${uid} di Firestore.`,
-                ...prev,
-              ]);
-            }
-          } catch (e) {
-            console.error(e);
+            setSimulationLogs(prev => [`[REPLAY] Terdaftar Check-Out UID: ${payload.uid}`, ...prev]);
           }
+        } catch (e) {
+          console.error("Firestore Error:", e);
         }
       }
+      await new Promise(r => setTimeout(r, simulationDelay));
     }
+    setIsReplaying(false);
+    setSimulationLogs(prev => [`[REPLAY] Simulasi replay selesai.`, ...prev]);
   };
 
-  const handleClearAll = () => {
-    setRawLogsInput("");
-    setParsedEvents([]);
-    setSimulationLogs([]);
-    setCurrentEventIndex(-1);
+  const formatDateTime = (isoString: string) => {
+    if (!isoString) return "-";
+    try {
+      const d = new Date(isoString);
+      return d.toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }) + " " + d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+    } catch (e) {
+      return isoString;
+    }
   };
 
   return (
-    <div className="p-0 space-y-8 font-mono text-(--color-y2k-text-main) selection:bg-(--color-y2k-lime) selection:text-(--color-y2k-button-text)">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b-4 border-(--color-y2k-border) pb-6">
-        <div>
-          <span className="text-[10px] text-(--color-y2k-purple) font-black uppercase tracking-[0.3em]">
-            Alternatif_Pengujian_Perangkat_Keras
-          </span>
-          <h1 className="text-3xl font-black text-(--color-y2k-lime) italic uppercase tracking-tighter flex items-center gap-2">
-            <Settings size={28} /> IoT Config & Emulator
-          </h1>
-        </div>
-        <div className="flex gap-2">
-          <div className="bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-border) px-4 py-1 text-center">
-            <p className="text-[8px] text-gray-500 uppercase">
-              Status Prototipe
-            </p>
-            <span className="text-[10px] text-yellow-500 font-bold flex items-center gap-1">
-              <Cpu size={12} /> REBUILDING
-            </span>
-          </div>
-        </div>
+    <div className="space-y-8 font-mono text-(--color-y2k-text-main) bg-(--color-y2k-bg-main)">
+      {/* Header Panel */}
+      <div className="border-b-4 border-(--color-y2k-border) pb-6">
+        <h1 className="text-3xl font-black italic uppercase flex items-center gap-3 text-(--color-y2k-lime) tracking-wider">
+          <Settings size={32} className="animate-spin-slow" /> IoT_Control_&_Sim_Panel
+        </h1>
+        <p className="text-xs text-(--color-y2k-text-muted) uppercase tracking-widest mt-2">
+          Node_Management / Diagnostic_Console / System_Override_Matrix
+        </p>
       </div>
 
+      {/* Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* KIRI: MQTTX LOG PASTER & PANEL AKSI */}
-        <div className="lg:col-span-6 space-y-8">
-          <Y2KCard title="MQTTX Log Importer" variant="purple">
-            <p className="text-[10px] text-(--color-y2k-text-muted) mb-4 uppercase leading-relaxed font-bold">
-              Salin log history dari MQTTX (yang memuat baris Topic, JSON
-              Payload, dan Timestamp) lalu paste di bawah:
-            </p>
+        
+        {/* Left Column: Overrides & Logs */}
+        <div className="lg:col-span-5 space-y-8">
+          
+          {/* Hardware Override */}
+          <Y2KCard title="Gerbang Override" variant="lime" icon={Cpu}>
+            <div className="bg-(--color-y2k-bg-panel) border-2 border-(--color-y2k-border) p-4 mb-4">
+              <div className="flex items-center gap-3 text-[10px] text-(--color-y2k-text-muted) mb-2">
+                <ShieldAlert size={14} className="text-(--color-y2k-lime)" />
+                <span>MQTT TOPIC: parking/gate/command</span>
+              </div>
+              <p className="text-xs text-(--color-y2k-text-muted) leading-relaxed">
+                Kirim perintah manual langsung untuk menggerakkan servo gerbang secara paksa. Pemuatan instan ke unit hardware ESP32.
+              </p>
+            </div>
 
-            <textarea
-              className="w-full h-48 bg-(--color-y2k-bg-panel) border-2 border-(--color-y2k-purple) p-4 text-xs font-mono text-(--color-y2k-lime) focus:outline-none focus:border-(--color-y2k-lime) placeholder:text-gray-700"
-              placeholder='Topic: parking/gate/statusQoS: 0&#10;{"slot_counter":0,...}&#10;2026-05-19 16:01:33:934'
-              value={rawLogsInput}
-              onChange={(e) => setRawLogsInput(e.target.value)}
-              disabled={isReplaying}
-            />
-
-            <div className="mt-4 flex flex-wrap gap-4">
-              <Y2KButton
-                className="py-2! px-4! text-xs!"
-                onClick={handleParseLogs}
-                disabled={isReplaying}
-              >
-                <RefreshCw size={14} className="inline mr-1" /> Parse_Data
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Y2KButton onClick={() => handlePublishCommand('FORCE_OPEN')} variant="lime" className="w-full justify-center">
+                🔓 FORCE OPEN
               </Y2KButton>
-              <Y2KButton
-                className="py-2! px-4! text-xs!"
-                onClick={handleClearAll}
-                variant="outline"
-                disabled={isReplaying}
-              >
-                <Trash2 size={14} className="inline mr-1" /> Bersihkan
+              <Y2KButton onClick={() => handlePublishCommand('FORCE_CLOSE')} variant="purple" className="w-full justify-center">
+                🔒 FORCE CLOSE
               </Y2KButton>
             </div>
-          </Y2KCard>
-
-          {/* URUTAN SEQUENCE EVENT */}
-          <Y2KCard title="Sequence Eksekusi" variant="grey">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-[9px] text-gray-500 font-black uppercase">
-                Timeline_Parsed: {parsedEvents.length} Event
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-[9px] text-(--color-y2k-text-muted) font-bold uppercase">
-                  Kecepatan:
-                </span>
-                <select
-                  className="bg-(--color-y2k-lime/10) border border-(--color-y2k-border) text-xs text-(--color-y2k-lime) px-2 py-0.5 focus:outline-none"
-                  value={simulationDelay}
-                  onChange={(e) => setSimulationDelay(Number(e.target.value))}
-                  disabled={isReplaying}
-                >
-                  <option value={1000}>Cepat (1s)</option>
-                  <option value={2000}>Normal (2s)</option>
-                  <option value={4000}>Lambat (4s)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="h-48 overflow-y-auto border-2 border-(--color-y2k-border) bg-(--color-y2k-bg-panel) p-2 space-y-2">
-              {parsedEvents.length === 0 ? (
-                <div className="text-gray-600 text-[10px] uppercase font-bold p-2 text-center italic">
-                  Belum ada log yang dimasukkan. Silakan paste dan klik Parse
-                  Data.
-                </div>
-              ) : (
-                parsedEvents.map((event, index) => {
-                  const isActive = currentEventIndex === index;
-                  const isFinished = currentEventIndex > index;
-                  return (
-                    <div
-                      key={index}
-                      className={`p-2 border text-[9px] flex justify-between items-center transition-all ${
-                        isActive
-                          ? "border-(--color-y2k-lime) bg-(--color-y2k-lime/10) text-(--color-y2k-text-main) font-black"
-                          : isFinished
-                            ? "border-gray-800 text-gray-600 line-through"
-                            : "border-(--color-y2k-border) text-(--color-y2k-text-muted)"
-                      }`}
-                    >
-                      <div className="truncate pr-2">
-                        <span className="text-y2k-purple font-bold">
-                          [{event.topic}]
-                        </span>{" "}
-                        {JSON.stringify(event.payload)}
-                      </div>
-                      <span className="text-[8px] opacity-50 shrink-0">
-                        {event.timestamp.split(" ")[1] || event.timestamp}
-                      </span>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            <div className="mt-4">
-              <button
-                onClick={handleStartReplay}
-                disabled={isReplaying || parsedEvents.length === 0}
-                className="w-full bg-y2k-lime text-y2k-button-text font-black py-3 border-2 border-y2k-solid-border shadow-[4px_4px_0px_0px_var(--color-y2k-purple)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Play size={14} className="inline mr-1" />{" "}
-                {isReplaying ? "Mengeksekusi..." : "Jalankan Simulasi Skenario"}
-              </button>
-            </div>
-          </Y2KCard>
-        </div>
-
-        {/* KANAN: MONITOR LIVE SIMULASI */}
-        <div className="lg:col-span-6 space-y-8">
-          <Y2KCard title="Monitor Hardware Virtual" variant="lime">
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="p-3 border-2 border-(--color-y2k-border) bg-(--color-y2k-lime/10)">
-                <p className="text-[8px] text-gray-500 uppercase font-black">
-                  Pintu_Masuk
-                </p>
-                <span
-                  className={`text-sm font-black italic uppercase ${gateMasuk === "BUKA" ? "text-y2k-lime" : "text-red-500"}`}
-                >
-                  {gateMasuk}
-                </span>
-              </div>
-              <div className="p-3 border-2 border-(--color-y2k-border) bg-(--color-y2k-lime/10)">
-                <p className="text-[8px] text-gray-500 uppercase font-black">
-                  Pintu_Keluar
-                </p>
-                <span
-                  className={`text-sm font-black italic uppercase ${gateKeluar === "BUKA" ? "text-y2k-lime" : "text-red-500"}`}
-                >
-                  {gateKeluar}
-                </span>
-              </div>
-            </div>
-
-            <div className="p-4 border-2 border-(--color-y2k-border) bg-y2k-bg-panel space-y-2 mb-6">
-              <div className="flex justify-between text-[10px] font-black border-b border-(--color-y2k-border) pb-1">
-                <span>Total Aktif (RFID):</span>
-                <span className="text-(--color-y2k-lime)">{slotCounter} Unit</span>
-              </div>
-              <div className="flex justify-between text-[10px] font-black">
-                <span>Daftar UID di Dalam:</span>
-                <span className="text-y2k-purple truncate max-w-[200px]">
-                  {kendaraanDalam.length > 0
-                    ? kendaraanDalam.join(", ")
-                    : "KOSONG"}
-                </span>
-              </div>
+            
+            <div className="mt-6 bg-black/60 border border-(--color-y2k-border) p-3 rounded">
+              <span className="text-[9px] text-(--color-y2k-text-muted) block mb-1">COMMAND ENGINE RESPONSE:</span>
+              <p className="text-xs text-(--color-y2k-lime) font-bold">{commandLog}</p>
             </div>
           </Y2KCard>
 
-          {/* SIMULASI CONSOLE LOGS */}
-          <div className="bg-y2k-bg-panel border-4 border-y2k-border p-6 shadow-[6px_6px_0px_0px_var(--color-y2k-bg-panel)]">
-            <h3 className="text-y2k-lime text-xs font-black uppercase mb-4 tracking-wider flex items-center gap-2">
-              <Terminal size={14} /> Konsol Terminal Emulator
-            </h3>
-            <div className="h-44 overflow-y-auto space-y-2 text-[9px] pr-2 scrollbar-thin scrollbar-thumb-gray-800">
+          {/* Real-time System Log Output */}
+          <Y2KCard title="Event Logger" variant="grey" icon={Terminal}>
+            <div className="bg-black/80 border-2 border-(--color-y2k-border) p-4 h-64 overflow-y-auto font-mono text-[11px] space-y-2 selection:bg-(--color-y2k-lime) selection:text-black">
               {simulationLogs.length === 0 ? (
-                <div className="text-gray-600 font-bold uppercase italic">
-                  Console standby...
-                </div>
+                <p className="text-(--color-y2k-text-muted) italic">Menunggu log aktivitas...</p>
               ) : (
-                simulationLogs.map((log, i) => (
-                  <div key={i} className="flex gap-2">
-                    <span className="text-gray-600 shrink-0">[{i}]</span>
-                    <span
-                      className={
-                        log.includes("[ERROR]")
-                          ? "text-red-500"
-                          : log.includes("[DB_SUCCESS]")
-                            ? "text-y2k-lime"
-                            : "text-gray-300"
-                      }
-                    >
+                simulationLogs.map((log, idx) => (
+                  <div key={idx} className="border-b border-gray-900 pb-1 flex gap-2">
+                    <span className="text-(--color-y2k-lime) shrink-0">&gt;</span>
+                    <span className={log.includes("[ERROR]") ? "text-red-500" : log.includes("[TIME_WARP") ? "text-(--color-y2k-purple)" : "text-gray-300"}>
                       {log}
                     </span>
                   </div>
                 ))
               )}
             </div>
-          </div>
+            <div className="mt-4 flex justify-end">
+              <button 
+                onClick={() => setSimulationLogs([])}
+                className="text-[9px] uppercase border border-(--color-y2k-border) px-2 py-1 text-(--color-y2k-text-muted) hover:text-(--color-y2k-lime) hover:border-(--color-y2k-lime) transition-all"
+              >
+                Clear Log
+              </button>
+            </div>
+          </Y2KCard>
         </div>
+
+        {/* Right Column: Time Warp Active Session List */}
+        <div className="lg:col-span-7 space-y-8">
+          
+          <Y2KCard title="Time Warp - Parked Vehicles" variant="purple" icon={Clock}>
+            <div className="mb-6 flex justify-between items-center">
+              <p className="text-xs text-(--color-y2k-text-muted) max-w-md">
+                Daftar kendaraan aktif di Firestore (`sessions`). Lakukan manipulasi waktu individual untuk mensimulasikan durasi parkir & cek algoritma tarif.
+              </p>
+              <div className="flex items-center gap-2 bg-(--color-y2k-bg-panel) px-3 py-1 border border-(--color-y2k-border) text-[10px] text-(--color-y2k-lime) font-bold shrink-0">
+                <RefreshCw size={12} className="animate-spin-slow" />
+                <span>LIVE LINKED</span>
+              </div>
+            </div>
+
+            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+              {ongoingSessions.length === 0 ? (
+                <div className="bg-(--color-y2k-bg-panel) border-2 border-dashed border-(--color-y2k-border) p-10 text-center">
+                  <p className="text-sm text-(--color-y2k-text-muted) uppercase tracking-widest font-black">
+                    Tidak Ada Sesi Parkir Ongoing
+                  </p>
+                  <p className="text-[10px] text-gray-600 mt-2">
+                    Lakukan simulasi scan kartu masuk atau log replayer terlebih dahulu.
+                  </p>
+                </div>
+              ) : (
+                ongoingSessions.map((session) => {
+                  const currentSelectedDuration = warpDurations[session.id] || 60; // default 1 hour
+                  return (
+                    <div 
+                      key={session.id} 
+                      className="border-2 border-(--color-y2k-border) bg-(--color-y2k-bg-panel) p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-(--color-y2k-lime) transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,0.3)]"
+                    >
+                      {/* Vehicle Details */}
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Key size={14} className="text-(--color-y2k-lime)" />
+                          <span className="text-xs font-bold text-(--color-y2k-lime) tracking-widest">{session.rfid_uid}</span>
+                          <span className="bg-purple-950 text-(--color-y2k-purple) text-[9px] px-2 py-0.5 border border-purple-500 uppercase font-black tracking-wider">
+                            {session.slot_id || 'PENDING'}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-(--color-y2k-text-muted) flex items-center gap-1.5">
+                          <span>Check-In:</span>
+                          <span className="text-white font-bold">{formatDateTime(session.check_in)}</span>
+                        </div>
+                      </div>
+
+                      {/* Time Warp Actions */}
+                      <div className="flex items-center gap-2 self-start md:self-auto shrink-0 w-full md:w-auto">
+                        <select 
+                          value={currentSelectedDuration}
+                          onChange={(e) => handleWarpDurationsChange(session.id, parseInt(e.target.value))}
+                          className="bg-black text-(--color-y2k-lime) border-2 border-(--color-y2k-border) p-2 text-xs font-mono focus:outline-none focus:border-(--color-y2k-lime) h-9 shrink-0 flex-1 md:flex-none"
+                        >
+                          <option value={15}>15 Menit</option>
+                          <option value={60}>1 Jam (Rp5K)</option>
+                          <option value={180}>3 Jam (Rp15K)</option>
+                          <option value={360}>6 Jam (Rp30K)</option>
+                          <option value={720}>12 Jam (Rp60K)</option>
+                          <option value={1440}>24 Jam (Rp120K)</option>
+                        </select>
+
+                        <button 
+                          onClick={() => handleSimulateCheckout(session, currentSelectedDuration)}
+                          className="bg-(--color-y2k-purple) hover:bg-(--color-y2k-purple)/85 text-black border-2 border-black font-black uppercase text-[10px] tracking-wider px-3 h-9 flex items-center gap-1.5 transition-all hover:translate-x-[2px] hover:translate-y-[2px] shadow-[2px_2px_0px_0px_(--color-y2k-lime)] hover:shadow-none shrink-0"
+                        >
+                          ⚡ Warp & Out
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </Y2KCard>
+
+          {/* MQTTX Log Importer */}
+          <Y2KCard title="MQTTX Log Importer" variant="purple" icon={Terminal}>
+            <p className="text-xs text-(--color-y2k-text-muted) mb-4">
+              Impor riwayat log dari MQTTX untuk simulasi sekuensial. Tempelkan log teks mentah Anda ke editor di bawah ini.
+            </p>
+            <textarea 
+              className="w-full h-32 bg-black/50 text-(--color-y2k-lime) border-2 border-(--color-y2k-border) p-3 text-xs font-mono focus:outline-none focus:border-(--color-y2k-lime) focus:ring-1 focus:ring-(--color-y2k-lime) rounded"
+              placeholder="Paste MQTTX raw logs here..."
+              value={rawLogsInput} 
+              onChange={(e) => setRawLogsInput(e.target.value)} 
+            />
+            <div className="mt-4 flex gap-4">
+              <Y2KButton onClick={handleParseLogs} variant="outline" className="text-xs py-2 px-4">
+                Parse Data
+              </Y2KButton>
+              <Y2KButton onClick={handleStartReplay} disabled={isReplaying || parsedEvents.length === 0} variant="purple" className="text-xs py-2 px-4">
+                {isReplaying ? "Simulating..." : "Jalankan Simulasi"}
+              </Y2KButton>
+            </div>
+          </Y2KCard>
+        </div>
+
       </div>
     </div>
   );
+
+  // Helper helper to update warpDurations state
+  function handleWarpDurationsChange(sessionId: string, val: number) {
+    setWarpDurations(prev => ({
+      ...prev,
+      [sessionId]: val
+    }));
+  }
 }
