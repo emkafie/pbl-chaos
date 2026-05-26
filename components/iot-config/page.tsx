@@ -77,7 +77,7 @@ export default function IotConfigPage() {
     return () => unsubscribe();
   }, []);
 
-  const handlePublishCommand = (command: 'FORCE_OPEN' | 'FORCE_CLOSE') => {
+  const handlePublishCommand = (command: 'FORCE_OPEN_MASUK' | 'FORCE_CLOSE_MASUK' | 'FORCE_OPEN_KELUAR' | 'FORCE_CLOSE_KELUAR') => {
     const client = (window as any).mqttClient;
     if (!client || !client.connected) {
       setCommandLog("❌ ERROR: MQTT Client tidak terhubung di Dashboard.");
@@ -242,11 +242,17 @@ export default function IotConfigPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Y2KButton onClick={() => handlePublishCommand('FORCE_OPEN')} variant="lime" className="w-full justify-center">
-                🔓 FORCE OPEN
+              <Y2KButton onClick={() => handlePublishCommand('FORCE_OPEN_MASUK')} variant="lime" className="w-full justify-center">
+                🔓 FORCE OPEN MASUK
               </Y2KButton>
-              <Y2KButton onClick={() => handlePublishCommand('FORCE_CLOSE')} variant="purple" className="w-full justify-center">
-                🔒 FORCE CLOSE
+              <Y2KButton onClick={() => handlePublishCommand('FORCE_CLOSE_MASUK')} variant="purple" className="w-full justify-center">
+                🔒 FORCE CLOSE MASUK
+              </Y2KButton>
+              <Y2KButton onClick={() => handlePublishCommand('FORCE_OPEN_KELUAR')} variant="lime" className="w-full justify-center">
+                🔓 FORCE OPEN KELUAR
+              </Y2KButton>
+              <Y2KButton onClick={() => handlePublishCommand('FORCE_CLOSE_KELUAR')} variant="purple" className="w-full justify-center">
+                🔒 FORCE CLOSE KELUAR
               </Y2KButton>
             </div>
             

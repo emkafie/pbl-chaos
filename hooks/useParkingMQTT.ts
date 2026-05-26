@@ -14,12 +14,13 @@ import {
 import { ParkingSlot } from '@/types';
 
 // Konfigurasi WebSockets HiveMQ Cloud menggunakan Env Variables dengan fallback otomatis
-const MQTT_HOST = process.env.NEXT_PUBLIC_MQTT_HOST || 'broker.emqx.io';
+// Jika NEXT_PUBLIC_MQTT_HOST tidak diset, default ke string kosong agar MQTT tidak dipaksa terhubung
+const MQTT_HOST = process.env.NEXT_PUBLIC_MQTT_HOST || '';
 const MQTT_USER = process.env.NEXT_PUBLIC_MQTT_USER || '';
 const MQTT_PASS = process.env.NEXT_PUBLIC_MQTT_PASS || '';
 
-const MQTT_PORT = MQTT_HOST.includes('hivemq.cloud') ? 8884 : 8084;
-const MQTT_BROKER_URL = `wss://${MQTT_HOST}:${MQTT_PORT}/mqtt`;
+const MQTT_PORT = MQTT_HOST && MQTT_HOST.includes('hivemq.cloud') ? 8884 : 8084;
+const MQTT_BROKER_URL = MQTT_HOST ? `wss://${MQTT_HOST}:${MQTT_PORT}/mqtt` : '';
 const ANOMALY_DEBOUNCE_TIME = 3; 
 
 /**
@@ -152,11 +153,18 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    if (!MQTT_HOST) {
+      console.log("ℹ️ MQTT_HOST tidak dikonfigurasi. Berjalan dalam mode offline MQTT (Firestore-only).");
+      setLastLog("ℹ️ MQTT offline. Menggunakan sinkronisasi Firestore.");
+      return;
+    }
+
     console.log(`⚡ Menghubungkan Web Dashboard ke Broker (${MQTT_HOST}) via WebSockets...`);
     
     const connectionOptions: mqtt.IClientOptions = {
       clean: true,
       connectTimeout: 5000,
+      reconnectPeriod: 5000,
     };
 
     if (MQTT_USER && MQTT_PASS) {
@@ -164,25 +172,48 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
       connectionOptions.password = MQTT_PASS;
     }
 
-    const client = mqtt.connect(MQTT_BROKER_URL, connectionOptions);
-    mqttClientRef.current = client;
+    let client: mqtt.MqttClient | null = null;
+    let isMounted = true;
+
+    try {
+      client = mqtt.connect(MQTT_BROKER_URL, connectionOptions);
+      mqttClientRef.current = client;
+    } catch (e) {
+      console.error("❌ Gagal menginisialisasi koneksi MQTT:", e);
+      return;
+    }
 
     client.on('connect', () => {
+      if (!isMounted) return;
       setConnected(true);
       if (typeof window !== 'undefined') {
         (window as any).mqttClient = client;
       }
       setLastLog(`CONNECTED_TO_BROKER_${MQTT_HOST.includes('hivemq') ? 'HIVEMQ_CLOUD' : 'EMQX'}`);
       
-      client.subscribe('parking/slot/+');
-      client.subscribe('parking/slot/status');
-      client.subscribe('parking/gate/status');
-      client.subscribe('parking/gate/event');
-      client.subscribe('parking/gate/lwt');
-      client.subscribe('parking/slot/lwt');
+      const safeSubscribe = (topic: string) => {
+        if (!isMounted || !client || !client.connected || client.disconnecting) return;
+        try {
+          client.subscribe(topic, (err) => {
+            if (err) {
+              console.warn(`⚠️ Gagal subscribe ke topic ${topic}:`, err);
+            }
+          });
+        } catch (e) {
+          console.warn(`⚠️ Exception saat subscribe ke topic ${topic}:`, e);
+        }
+      };
+
+      safeSubscribe('parking/slot/+');
+      safeSubscribe('parking/slot/status');
+      safeSubscribe('parking/gate/status');
+      safeSubscribe('parking/gate/event');
+      safeSubscribe('parking/gate/lwt');
+      safeSubscribe('parking/slot/lwt');
     });
 
     client.on('message', async (topic, message) => {
+      if (!isMounted) return;
       const payloadString = message.toString();
 
       try {
@@ -318,20 +349,27 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
       }
     });
 
-    client.on('error', (err) => {
-      console.error('MQTT Cloud Error:', err);
+    client.on('error', (err: any) => {
+      if (!isMounted) return;
+      console.warn('MQTT Cloud Connection Error:', err.message || err);
       setConnected(false);
     });
 
     client.on('close', () => {
+      if (!isMounted) return;
       setConnected(false);
       setGateOnline(false);
       setSlotOnline(false);
     });
 
     return () => {
+      isMounted = false;
       if (client) {
-        client.end();
+        try {
+          client.end(true);
+        } catch (e) {
+          console.warn("Exception while ending MQTT client:", e);
+        }
         if (typeof window !== 'undefined' && (window as any).mqttClient === client) {
           (window as any).mqttClient = null;
         }
