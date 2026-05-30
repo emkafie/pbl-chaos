@@ -12,6 +12,7 @@ import OverviewTab from "../../components/parking/overview";
 import { useAuth } from "@/app/context/AuthContext";
 import AnalyticsTab from "@/components/admin/analyticsTab";
 import UserManagerTab from "@/components/admin/userManager";
+import HistoryLogTab from "@/components/admin/HistoryLogTab";
 import OperatorNotesModal from "@/components/modal/operatorNotes";
 import NotificationsModal from "@/components/modal/NotificationsModal";
 import ProfileTab from "@/components/profile/ProfileTab";
@@ -24,7 +25,8 @@ import { useMqttParking } from "@/hooks/useParkingMQTT";
 export default function DashboardPage() {
   const { user: authUser, loading: authLoading, signOut } = useAuth();
 
-  const { slots,
+  const {
+    slots,
     loading,
     error,
     totalSlots,
@@ -32,7 +34,8 @@ export default function DashboardPage() {
     occupiedSlots,
     maintenanceSlots,
     occupancyRate,
-    refresh, } = useParkingSlots();
+    refresh,
+  } = useParkingSlots();
 
   const {
     isAnomaly,
@@ -124,6 +127,8 @@ export default function DashboardPage() {
         return "USER_SETTINGS";
       case "notifications":
         return "NOTIFICATIONS_CENTER";
+      case "history":
+        return "SESSION_HISTORY_LOG";
       default:
         return activeTab.toUpperCase() + "_MODULE";
     }
@@ -157,7 +162,10 @@ export default function DashboardPage() {
               {pendingAnomaly && (
                 <div className="bg-[rgba(234,179,8,0.1)] border-4 border-yellow-500 text-yellow-500 p-4 font-black text-xs sm:text-sm shadow-[4px_4px_0px_0px_rgba(234,179,8,1)] flex items-center justify-between gap-4 uppercase mb-6 animate-pulse">
                   <div className="flex items-center gap-2">
-                    <span>⚠️ EVALUASI ANOMALI: Selisih sensor terdeteksi. Menyaring noise ({countdown}s)...</span>
+                    <span>
+                      ⚠️ EVALUASI ANOMALI: Selisih sensor terdeteksi. Menyaring
+                      noise ({countdown}s)...
+                    </span>
                   </div>
                 </div>
               )}
@@ -166,9 +174,18 @@ export default function DashboardPage() {
               {isAnomaly && (
                 <div className="bg-[rgba(239,68,68,0.1)] border-4 border-red-500 text-red-500 p-4 font-black text-xs sm:text-sm shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] flex items-center justify-between gap-4 uppercase mb-6 animate-[pulse_1s_infinite]">
                   <div className="flex items-center gap-2">
-                    <span>🔴 ANOMALI TERDETEKSI (Ada objek di slot {mqttSlots.filter(s => s.status === 'occupied').map(s => s.id).join(', ') || 'A01'} tanpa otorisasi kartu RFID!)</span>
+                    <span>
+                      🔴 ANOMALI TERDETEKSI (Ada objek di slot{" "}
+                      {mqttSlots
+                        .filter((s) => s.status === "occupied")
+                        .map((s) => s.id)
+                        .join(", ") || "A01"}{" "}
+                      tanpa otorisasi kartu RFID!)
+                    </span>
                   </div>
-                  <span className="text-[10px] opacity-75 shrink-0">{anomalyTimestamp}</span>
+                  <span className="text-[10px] opacity-75 shrink-0">
+                    {anomalyTimestamp}
+                  </span>
                 </div>
               )}
 
@@ -229,7 +246,7 @@ export default function DashboardPage() {
                     </div>
                   </Y2KCard>
                   <div className="lg:col-span-1">
-                  {isAdmin && <RecentLogin role={userProfile.role}/>}
+                    {isAdmin && <RecentLogin role={userProfile.role} />}
                   </div>
                 </div>
                 {/* Analytics moved to its own tab — removed duplicate here */}
@@ -254,8 +271,9 @@ export default function DashboardPage() {
             />
           )}
           {activeTab === "users" && <div>{isAdmin && <UserManagerTab />}</div>}
-          {activeTab === "config" && (
-            <div>{isAdmin && <IotConfigPage />}</div>
+          {activeTab === "config" && <div>{isAdmin && <IotConfigPage />}</div>}
+          {activeTab === "history" && (
+            <div>{isAdmin && <HistoryLogTab userRole="admin" />}</div>
           )}
 
           {/* Profile Tab */}

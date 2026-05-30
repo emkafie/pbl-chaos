@@ -2,28 +2,28 @@
 
 @layer base {
   :root {
-    --y2k-bg-main: #1A1A1A;
+    --y2k-bg-main: #1a1a1a;
     --y2k-bg-panel: #111111;
-    --y2k-border: #4D4D4D;
-    --y2k-text-main: #FFFFFF;
-    --y2k-text-muted: #9CA3AF;
-    --y2k-lime: #C4FF4D;
-    --y2k-purple: #BA8CFF;
-    --y2k-button-text: #1A1A1A;
-    --y2k-solid-border: #1A1A1A;
+    --y2k-border: #4d4d4d;
+    --y2k-text-main: #ffffff;
+    --y2k-text-muted: #9ca3af;
+    --y2k-lime: #c4ff4d;
+    --y2k-purple: #ba8cff;
+    --y2k-button-text: #1a1a1a;
+    --y2k-solid-border: #1a1a1a;
     --y2k-red: #da110b;
   }
 
   .bright-theme {
-    --y2k-bg-main: #E8E8E8;
-    --y2k-bg-panel: #FFFFFF;
-    --y2k-border: #A0A0A0;
-    --y2k-text-main: #1A1A1A;
-    --y2k-text-muted: #4B5563;
-    --y2k-lime: #4A6E10;
-    --y2k-purple: #5D3FD3;
-    --y2k-button-text: #FFFFFF;
-    --y2k-solid-border: #1A1A1A;
+    --y2k-bg-main: #e8e8e8;
+    --y2k-bg-panel: #ffffff;
+    --y2k-border: #a0a0a0;
+    --y2k-text-main: #1a1a1a;
+    --y2k-text-muted: #4b5563;
+    --y2k-lime: #4a6e10;
+    --y2k-purple: #5d3fd3;
+    --y2k-button-text: #ffffff;
+    --y2k-solid-border: #1a1a1a;
   }
 }
 
@@ -57,4 +57,28 @@ body {
   background: var(--y2k-bg-main);
   color: var(--y2k-text-main);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Style untuk option elements dalam select dropdown */
+select option {
+  background-color: var(--y2k-bg-main);
+  color: var(--y2k-text-main);
+}
+
+.bright-theme select option {
+  background-color: var(--y2k-bg-panel);
+  color: var(--y2k-text-main);
+}
+
+/* Style untuk date input icon */
+input[type="date"] {
+  color: var(--y2k-text-main);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+.bright-theme input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0);
 }

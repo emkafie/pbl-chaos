@@ -8,6 +8,7 @@ import {
   Users,
   Settings,
   LogOut,
+  Clock,
 } from "lucide-react";
 import { NavItemProps } from "@/types";
 import { useAuth } from "@/app/context/AuthContext";
@@ -75,9 +76,10 @@ export const Sidebar = ({
           fixed md:relative inset-y-0 left-0 z-50
           bg-(--color-y2k-bg-main) border-r-4 border-(--color-y2k-border)
           transition-all duration-300 shrink-0
-          ${isOpen
-            ? "w-64 translate-x-0"
-            : "w-64 -translate-x-full md:w-20 md:translate-x-0"
+          ${
+            isOpen
+              ? "w-64 translate-x-0"
+              : "w-64 -translate-x-full md:w-20 md:translate-x-0"
           }
         `}
       >
@@ -144,6 +146,13 @@ export const Sidebar = ({
                 label="IoT Config"
                 active={activeTab === "config"}
                 onClick={() => handleNavClick("config")}
+                collapsed={!isOpen}
+              />
+              <NavItem
+                icon={<Clock size={20} />}
+                label="History Log"
+                active={activeTab === "history"}
+                onClick={() => handleNavClick("history")}
                 collapsed={!isOpen}
               />
             </>
