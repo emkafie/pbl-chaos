@@ -2,10 +2,23 @@
 
 import { UserProfile } from "@/types";
 import { useState, useEffect, createContext, useContext } from "react";
-import { auth, db } from "@/app/lib/firebase";
-import { onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
+import { db } from "@/app/lib/firebase";
 import { AuthService } from "@/app/lib/authService";
 import { UserService, UserData } from "@/app/lib/userService";
+
+/**
+ * AuthContext
+ * -----------
+ * Manages the current user session (persisted in localStorage).
+ *
+ * ❌ REMOVED: useEffect that called refreshUsers() on every mount
+ *             → was reading the entire `users` collection on every page load.
+ * ❌ REMOVED: onAuthStateChanged listener from Firebase Auth
+ *             → was only logging to console but still opened a persistent connection.
+ *
+ * ✅ refreshUsers() is still available — the UserManager tab calls it explicitly
+ *    when it needs the list (on-demand, not on boot).
+ */
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -32,7 +45,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
 
-  // Initial Load from LocalStorage
+  // Restore session from localStorage on boot — zero Firestore reads
   useEffect(() => {
     const savedUser = localStorage.getItem("active_user");
     if (savedUser) {
@@ -44,19 +57,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
     setLoading(false);
-
-    // Keep Firebase Auth in sync for potential Firebase rules usage (optional)
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      console.log(
-        "Firebase Auth State:",
-        firebaseUser ? "Anonymously Authenticated" : "Unauthenticated",
-      );
-    });
-
-    return () => unsubscribe();
   }, []);
 
-  // Fetch users list
+  // On-demand: fetch users list (called by UserManager tab, not on boot)
   const refreshUsers = async () => {
     setUsersLoading(true);
     setUsersError(null);
@@ -72,11 +75,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUsersLoading(false);
     }
   };
-
-  // Load users saat component mount
-  useEffect(() => {
-    refreshUsers();
-  }, []);
 
   const signIn = async (username: string, password: string) => {
     setLoading(true);
@@ -94,11 +92,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       setUser(userProfile);
       localStorage.setItem("active_user", JSON.stringify(userProfile));
-
-      // Refresh users list to update login times
-      await refreshUsers();
-
-      // Set session cookie for middleware if needed
       document.cookie = "user_session=true; path=/;";
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -113,8 +106,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     setLoading(true);
     try {
-      await firebaseSignOut(auth); // Sign out from Firebase if logged in anonymously
       setUser(null);
+      setUsers([]);
       localStorage.removeItem("active_user");
       document.cookie =
         "user_session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";

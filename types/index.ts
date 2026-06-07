@@ -1,4 +1,4 @@
-export type SlotStatus = 'available' | 'occupied';
+export type SlotStatus = 'available' | 'occupied' | 'maintenance';
 export type UserRole = 'admin' | 'operator' | 'guest';
 
 export interface UserProfile {
@@ -39,4 +39,16 @@ export interface ParkingSession {
 export interface ChartData {
   name: string;
   value: number;
+}
+
+export type NotificationSeverity = 'low' | 'moderate' | 'critical';
+
+export interface Notification {
+  id?: string;
+  message: string;
+  severity: NotificationSeverity;
+  senderRole: UserRole;
+  receiverRole: UserRole;
+  createdAt: string;
+  isRead: boolean;
 }

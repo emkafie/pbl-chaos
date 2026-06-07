@@ -1,37 +1,84 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@layer base {
+  :root {
+    --y2k-bg-main: #1a1a1a;
+    --y2k-bg-panel: #111111;
+    --y2k-border: #4d4d4d;
+    --y2k-text-main: #ffffff;
+    --y2k-text-muted: #9ca3af;
+    --y2k-lime: #c4ff4d;
+    --y2k-purple: #ba8cff;
+    --y2k-button-text: #1a1a1a;
+    --y2k-solid-border: #1a1a1a;
+    --y2k-red: #da110b;
+  }
 
-::selection {
-  background: #C4FF4D;
-  color: #1A1A1A;
-  text-shadow: 0 0 4px #C4FF4D;
-}
-
-::-moz-selection {
-  background: #C4FF4D;
-  color: #1A1A1A;
+  .bright-theme {
+    --y2k-bg-main: #e8e8e8;
+    --y2k-bg-panel: #ffffff;
+    --y2k-border: #a0a0a0;
+    --y2k-text-main: #1a1a1a;
+    --y2k-text-muted: #4b5563;
+    --y2k-lime: #4a6e10;
+    --y2k-purple: #5d3fd3;
+    --y2k-button-text: #ffffff;
+    --y2k-solid-border: #1a1a1a;
+  }
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-y2k-bg-main: var(--y2k-bg-main);
+  --color-y2k-bg-panel: var(--y2k-bg-panel);
+  --color-y2k-border: var(--y2k-border);
+  --color-y2k-text-main: var(--y2k-text-main);
+  --color-y2k-text-muted: var(--y2k-text-muted);
+  --color-y2k-lime: var(--y2k-lime);
+  --color-y2k-purple: var(--y2k-purple);
+  --color-y2k-button-text: var(--y2k-button-text);
+  --color-y2k-solid-border: var(--y2k-solid-border);
+  --color-y2k-red: var(--y2k-red);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+::selection {
+  background: var(--y2k-lime);
+  color: var(--y2k-button-text);
+  text-shadow: 0 0 4px var(--y2k-lime);
+}
+
+::-moz-selection {
+  background: var(--y2k-lime);
+  color: var(--y2k-button-text);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--y2k-bg-main);
+  color: var(--y2k-text-main);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Style untuk option elements dalam select dropdown */
+select option {
+  background-color: var(--y2k-bg-main);
+  color: var(--y2k-text-main);
+}
+
+.bright-theme select option {
+  background-color: var(--y2k-bg-panel);
+  color: var(--y2k-text-main);
+}
+
+/* Style untuk date input icon */
+input[type="date"] {
+  color: var(--y2k-text-main);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+.bright-theme input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0);
 }

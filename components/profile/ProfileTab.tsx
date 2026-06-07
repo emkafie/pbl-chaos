@@ -15,9 +15,9 @@ interface ProfileTabProps {
 
 const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile }) => {
   const roleColors: Record<string, string> = {
-    admin: "bg-[#C4FF4D] text-[#1A1A1A]",
-    operator: "bg-[#BA8CFF] text-[#1A1A1A]",
-    guest: "bg-[#4D4D4D] text-white",
+    admin: "bg-(--color-y2k-lime) text-(--color-y2k-button-text)",
+    operator: "bg-(--color-y2k-purple) text-(--color-y2k-button-text)",
+    guest: "bg-(--color-y2k-border) text-(--color-y2k-text-main)",
   };
 
   const formatDate = (dateStr?: string) => {
@@ -46,28 +46,28 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile }) => {
               <img
                 src={userProfile.profilePicture}
                 alt={userProfile.username}
-                className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-[#BA8CFF] shadow-[4px_4px_0px_0px_#C4FF4D] object-cover"
+                className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-(--color-y2k-purple) shadow-[4px_4px_0px_0px_var(--color-y2k-lime)] object-cover"
               />
             ) : (
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-[#BA8CFF] shadow-[4px_4px_0px_0px_#C4FF4D] bg-[#BA8CFF]/20 flex items-center justify-center">
-                <span className="text-4xl sm:text-5xl font-black text-[#BA8CFF] uppercase">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-(--color-y2k-purple) shadow-[4px_4px_0px_0px_var(--color-y2k-lime)] bg-(--color-y2k-purple)/20 flex items-center justify-center">
+                <span className="text-4xl sm:text-5xl font-black text-(--color-y2k-purple) uppercase">
                   {userProfile.username?.charAt(0) || "?"}
                 </span>
               </div>
             )}
-            <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#C4FF4D] border-2 border-[#1A1A1A] rounded-full flex items-center justify-center">
-              <Camera size={14} className="text-[#1A1A1A]" />
+            <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-(--color-y2k-lime) border-2 border-(--color-y2k-solid-border) rounded-full flex items-center justify-center">
+              <Camera size={14} className="text-(--color-y2k-button-text)" />
             </div>
           </div>
 
           {/* User Info */}
           <div className="text-center sm:text-left flex-1">
-            <h2 className="text-2xl sm:text-3xl font-black text-white uppercase italic tracking-tighter">
+            <h2 className="text-2xl sm:text-3xl font-black text-(--color-y2k-text-main) uppercase italic tracking-tighter">
               {userProfile.username}
             </h2>
             <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
               <span
-                className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest border-2 border-[#1A1A1A] ${
+                className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest border-2 border-(--color-y2k-solid-border) ${
                   roleColors[userProfile.role] || roleColors.guest
                 }`}
               >
@@ -84,39 +84,39 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile }) => {
       <Y2KCard title="User_Details" icon={User} variant="grey">
         <div className="space-y-4">
           {/* Username */}
-          <div className="flex items-start gap-4 p-4 bg-[#4D4D4D]/10 border-l-4 border-[#C4FF4D]">
-            <div className="w-8 h-8 bg-[#C4FF4D]/10 flex items-center justify-center shrink-0">
-              <User size={16} className="text-[#C4FF4D]" />
+          <div className="flex items-start gap-4 p-4 bg-(--color-y2k-border)/10 border-l-4 border-(--color-y2k-lime)">
+            <div className="w-8 h-8 bg-(--color-y2k-lime)/10 flex items-center justify-center shrink-0">
+              <User size={16} className="text-(--color-y2k-lime)" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">
                 Username
               </p>
-              <p className="text-white font-bold text-sm truncate">
+              <p className="text-(--color-y2k-text-main) font-bold text-sm truncate">
                 {userProfile.username}
               </p>
             </div>
           </div>
 
           {/* Email */}
-          <div className="flex items-start gap-4 p-4 bg-[#4D4D4D]/10 border-l-4 border-[#BA8CFF]">
-            <div className="w-8 h-8 bg-[#BA8CFF]/10 flex items-center justify-center shrink-0">
-              <Mail size={16} className="text-[#BA8CFF]" />
+          <div className="flex items-start gap-4 p-4 bg-(--color-y2k-border)/10 border-l-4 border-(--color-y2k-purple)">
+            <div className="w-8 h-8 bg-(--color-y2k-purple)/10 flex items-center justify-center shrink-0">
+              <Mail size={16} className="text-(--color-y2k-purple)" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">
                 Email
               </p>
-              <p className="text-white font-bold text-sm truncate">
+              <p className="text-(--color-y2k-text-main) font-bold text-sm truncate">
                 {userProfile.email || "Not set"}
               </p>
             </div>
           </div>
 
           {/* Role */}
-          <div className="flex items-start gap-4 p-4 bg-[#4D4D4D]/10 border-l-4 border-[#C4FF4D]">
-            <div className="w-8 h-8 bg-[#C4FF4D]/10 flex items-center justify-center shrink-0">
-              <Shield size={16} className="text-[#C4FF4D]" />
+          <div className="flex items-start gap-4 p-4 bg-(--color-y2k-border)/10 border-l-4 border-(--color-y2k-lime)">
+            <div className="w-8 h-8 bg-(--color-y2k-lime)/10 flex items-center justify-center shrink-0">
+              <Shield size={16} className="text-(--color-y2k-lime)" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">
@@ -124,7 +124,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile }) => {
               </p>
               <div className="flex items-center gap-2">
                 <span
-                  className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-widest border-2 border-[#1A1A1A] ${
+                  className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-widest border-2 border-(--color-y2k-solid-border) ${
                     roleColors[userProfile.role] || roleColors.guest
                   }`}
                 >
@@ -142,15 +142,15 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile }) => {
           </div>
 
           {/* Last Login */}
-          <div className="flex items-start gap-4 p-4 bg-[#4D4D4D]/10 border-l-4 border-[#BA8CFF]">
-            <div className="w-8 h-8 bg-[#BA8CFF]/10 flex items-center justify-center shrink-0">
-              <Clock size={16} className="text-[#BA8CFF]" />
+          <div className="flex items-start gap-4 p-4 bg-(--color-y2k-border)/10 border-l-4 border-(--color-y2k-purple)">
+            <div className="w-8 h-8 bg-(--color-y2k-purple)/10 flex items-center justify-center shrink-0">
+              <Clock size={16} className="text-(--color-y2k-purple)" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">
                 Last Login
               </p>
-              <p className="text-white font-bold text-sm">
+              <p className="text-(--color-y2k-text-main) font-bold text-sm">
                 {formatDate(userProfile.lastLogin)}
               </p>
             </div>

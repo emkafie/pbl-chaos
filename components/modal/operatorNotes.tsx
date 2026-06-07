@@ -21,7 +21,7 @@ export default function OperatorNotesModal({ onClose }: OperatorNotesModalProps)
         <Y2KCard 
           title="SYSTEM_MESSAGE: OPERATOR_NOTES" 
           variant="grey" 
-          className="shadow-[10px_10px_0px_0px_#BA8CFF] mb-0"
+          className="shadow-[10px_10px_0px_0px_var(--color-y2k-purple)] mb-0"
         >
           <div className="space-y-6">
             <div className="p-6 bg-yellow-500/10 border-4 border-yellow-500 text-yellow-500 font-bold italic flex flex-col items-center text-center gap-4">
@@ -38,14 +38,14 @@ export default function OperatorNotesModal({ onClose }: OperatorNotesModalProps)
             <div className="flex flex-col gap-3">
               <button 
                 onClick={onClose}
-                className="w-full bg-[#C4FF4D] text-[#1A1A1A] font-black py-4 border-2 border-[#1A1A1A] shadow-[4px_4px_0px_0px_rgba(186,140,255,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all uppercase text-xs tracking-widest"
+                className="w-full bg-(--color-y2k-lime) text-(--color-y2k-button-text) font-black py-4 border-2 border-(--color-y2k-solid-border) shadow-[4px_4px_0px_0px_var(--color-y2k-purple)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all uppercase text-xs tracking-widest"
               >
                 Acknowledge_Message
               </button>
               
               <button 
                 onClick={onClose}
-                className="w-full text-[10px] font-bold text-gray-500 hover:text-white uppercase tracking-widest transition-colors italic"
+                className="w-full text-[10px] font-bold text-gray-500 hover:text-(--color-y2k-text-main) uppercase tracking-widest transition-colors italic"
               >
                 Ignore_Temporarily
               </button>
@@ -57,7 +57,7 @@ export default function OperatorNotesModal({ onClose }: OperatorNotesModalProps)
         <button 
           onClick={onClose}
           aria-label="close modal"
-          className="absolute -top-3 -right-3 bg-[#BA8CFF] text-[#1A1A1A] p-2 border-2 border-[#1A1A1A] shadow-[2px_2px_0px_0px_#C4FF4D] hover:scale-110 active:scale-95 transition-all"
+          className="absolute -top-3 -right-3 bg-(--color-y2k-purple) text-(--color-y2k-button-text) p-2 border-2 border-(--color-y2k-solid-border) shadow-[2px_2px_0px_0px_var(--color-y2k-lime)] hover:scale-110 active:scale-95 transition-all"
         >
           <X size={16} strokeWidth={3} />
         </button>

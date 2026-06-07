@@ -8,6 +8,7 @@ import {
   Users,
   Settings,
   LogOut,
+  Clock,
 } from "lucide-react";
 import { NavItemProps } from "@/types";
 import { useAuth } from "@/app/context/AuthContext";
@@ -23,8 +24,8 @@ const NavItem: React.FC<NavItemProps> = ({
     onClick={onClick}
     className={`w-full flex items-center gap-4 p-3 transition-all font-bold uppercase text-[11px] border-2 ${
       active
-        ? "bg-[#C4FF4D] text-[#1A1A1A] border-[#1A1A1A] shadow-[3px_3px_0px_0px_rgba(186,140,255,1)] translate-x-1"
-        : "text-gray-500 border-transparent hover:text-white hover:translate-x-1"
+        ? "bg-(--color-y2k-lime) text-(--color-y2k-button-text) border-(--color-y2k-solid-border) shadow-[3px_3px_0px_0px_var(--color-y2k-purple)] translate-x-1"
+        : "text-gray-500 border-transparent hover:text-(--color-y2k-text-main) hover:translate-x-1"
     }`}
   >
     {icon}
@@ -73,22 +74,23 @@ export const Sidebar = ({
       <aside
         className={`
           fixed md:relative inset-y-0 left-0 z-50
-          bg-[#1A1A1A] border-r-4 border-[#4D4D4D]
+          bg-(--color-y2k-bg-main) border-r-4 border-(--color-y2k-border)
           transition-all duration-300 shrink-0
-          ${isOpen
-            ? "w-64 translate-x-0"
-            : "w-64 -translate-x-full md:w-20 md:translate-x-0"
+          ${
+            isOpen
+              ? "w-64 translate-x-0"
+              : "w-64 -translate-x-full md:w-20 md:translate-x-0"
           }
         `}
       >
         {/* Logo */}
         <div className="p-6 flex items-center gap-3">
-          <div className="bg-[#C4FF4D] p-2 border-2 border-[#1A1A1A]">
-            <Car className="text-[#1A1A1A]" size={20} />
+          <div className="bg-(--color-y2k-lime) p-2 border-2 border-(--color-y2k-solid-border)">
+            <Car className="text-(--color-y2k-button-text)" size={20} />
           </div>
           {/* Always show text on mobile drawer; on desktop respect collapsed state */}
           <span
-            className={`font-black text-xl italic tracking-tighter text-[#C4FF4D] ${
+            className={`font-black text-xl italic tracking-tighter text-(--color-y2k-lime) ${
               !isOpen ? "md:hidden" : ""
             }`}
           >
@@ -117,7 +119,7 @@ export const Sidebar = ({
           {user?.role === "admin" && (
             <>
               <div
-                className={`pt-4 border-t-2 border-[#4D4D4D] ${
+                className={`pt-4 border-t-2 border-(--color-y2k-border) ${
                   !isOpen ? "md:hidden" : ""
                 }`}
               >
@@ -146,13 +148,20 @@ export const Sidebar = ({
                 onClick={() => handleNavClick("config")}
                 collapsed={!isOpen}
               />
+              <NavItem
+                icon={<Clock size={20} />}
+                label="History Log"
+                active={activeTab === "history"}
+                onClick={() => handleNavClick("history")}
+                collapsed={!isOpen}
+              />
             </>
           )}
 
           <div className="pt-10">
             <button
               onClick={onLogout}
-              className="w-full flex items-center gap-4 p-3 text-[#BA8CFF] hover:bg-[#BA8CFF] hover:text-[#1A1A1A] transition-colors font-bold uppercase text-xs"
+              className="w-full flex items-center gap-4 p-3 text-(--color-y2k-purple) hover:bg-(--color-y2k-purple) hover:text-(--color-y2k-button-text) transition-colors font-bold uppercase text-xs"
             >
               <LogOut size={20} />
               {isOpen && <span>Disconnect</span>}

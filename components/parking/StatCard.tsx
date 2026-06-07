@@ -10,7 +10,7 @@ interface StatCardProps {
 const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color }) => {
   return (
     <div
-      className="bg-[#1A1A1A] p-6 border-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between font-mono"
+      className="bg-(--color-y2k-bg-main) p-6 border-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between font-mono"
       style={{ borderColor: color }}
     >
       <div>

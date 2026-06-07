@@ -107,9 +107,9 @@ const UserManagerTab = () => {
 
   const roleClass = (role: string) =>
     role === "admin"
-      ? "border-[#BA8CFF] text-[#BA8CFF]"
+      ? "border-(--color-y2k-purple) text-(--color-y2k-purple)"
       : role === "operator"
-      ? "border-[#C4FF4D] text-[#C4FF4D]"
+      ? "border-(--color-y2k-lime) text-(--color-y2k-lime)"
       : "border-gray-500 text-gray-500";
 
   return (
@@ -122,7 +122,7 @@ const UserManagerTab = () => {
           </p>
           <button
             onClick={() => handleOpenModal()}
-            className="flex items-center gap-2 bg-[#C4FF4D] text-[#1A1A1A] px-4 py-2 text-[10px] font-black border-2 border-[#1A1A1A] shadow-[3px_3px_0px_0px_#BA8CFF] uppercase active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all hover:shadow-none disabled:opacity-50"
+            className="flex items-center gap-2 bg-(--color-y2k-lime) text-(--color-y2k-button-text) px-4 py-2 text-[10px] font-black border-2 border-(--color-y2k-solid-border) shadow-[3px_3px_0px_0px_var(--color-y2k-purple)] uppercase active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all hover:shadow-none disabled:opacity-50"
             disabled={actionLoading || usersLoading}
           >
             <UserPlus size={14} /> Enroll_New_Node
@@ -139,14 +139,14 @@ const UserManagerTab = () => {
 
         {/* Loading State */}
         {usersLoading && (
-          <div className="p-6 text-center text-gray-400 text-[11px] uppercase">
+          <div className="p-6 text-center text-(--color-y2k-text-muted) text-[11px] uppercase">
             Loading users...
           </div>
         )}
 
         {/* Empty State */}
         {!usersLoading && users.length === 0 && (
-          <div className="p-6 text-center text-gray-400 text-[11px] uppercase">
+          <div className="p-6 text-center text-(--color-y2k-text-muted) text-[11px] uppercase">
             No users found. Create one to get started.
           </div>
         )}
@@ -158,11 +158,11 @@ const UserManagerTab = () => {
               {users.map((user) => (
                 <div
                   key={user.id}
-                  className="border-2 border-[#4D4D4D] bg-[#4D4D4D]/10 p-4 space-y-3"
+                  className="border-2 border-(--color-y2k-border) bg-(--color-y2k-border)/10 p-4 space-y-3"
                 >
                   {/* Identity + role */}
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-[#C4FF4D] font-black text-sm truncate">
+                    <span className="text-(--color-y2k-lime) font-black text-sm truncate">
                       {user.username}
                     </span>
                     <span
@@ -173,19 +173,19 @@ const UserManagerTab = () => {
                   </div>
 
                   {/* Dates */}
-                  <div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-gray-400">
+                  <div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-(--color-y2k-text-muted)">
                     <div>
-                      <p className="text-[#BA8CFF] uppercase text-[9px] mb-0.5">Created</p>
+                      <p className="text-(--color-y2k-purple) uppercase text-[9px] mb-0.5">Created</p>
                       <p>{formatDate(user.created_at)}</p>
                     </div>
                     <div>
-                      <p className="text-[#BA8CFF] uppercase text-[9px] mb-0.5">Last Session</p>
+                      <p className="text-(--color-y2k-purple) uppercase text-[9px] mb-0.5">Last Session</p>
                       <p>{formatDate(user.last_login)}</p>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-4 pt-1 border-t border-[#4D4D4D]">
+                  <div className="flex items-center gap-4 pt-1 border-t border-(--color-y2k-border)">
                     <button
                       onClick={() => handleOpenModal(user)}
                       disabled={actionLoading}
@@ -205,7 +205,7 @@ const UserManagerTab = () => {
                         <button
                           onClick={() => setDeleteConfirm(null)}
                           disabled={actionLoading}
-                          className="text-gray-400 hover:text-gray-300 disabled:opacity-50"
+                          className="text-(--color-y2k-text-muted) hover:text-gray-300 disabled:opacity-50"
                         >
                           Cancel
                         </button>
@@ -225,10 +225,10 @@ const UserManagerTab = () => {
             </div>
 
             {/* ── DESKTOP: Table (hidden below md) ───────────────── */}
-            <div className="hidden md:block overflow-x-auto border-2 border-[#4D4D4D]">
+            <div className="hidden md:block overflow-x-auto border-2 border-(--color-y2k-border)">
               <table className="w-full text-left text-[11px] font-bold">
-                <thead className="bg-[#4D4D4D]/20 border-b-2 border-[#4D4D4D]">
-                  <tr className="uppercase text-[#BA8CFF] italic">
+                <thead className="bg-(--color-y2k-border)/20 border-b-2 border-(--color-y2k-border)">
+                  <tr className="uppercase text-(--color-y2k-purple) italic">
                     <th className="p-4">User_Identity</th>
                     <th className="p-4">Access_Role</th>
                     <th className="p-4">Created_At</th>
@@ -236,13 +236,13 @@ const UserManagerTab = () => {
                     <th className="p-4 text-center">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#4D4D4D]">
+                <tbody className="divide-y divide-(--color-y2k-border)">
                   {users.map((user) => (
                     <tr
                       key={user.id}
-                      className="hover:bg-[#C4FF4D]/5 transition-colors"
+                      className="hover:bg-(--color-y2k-lime)/5 transition-colors"
                     >
-                      <td className="p-4 text-[#C4FF4D]">{user.username}</td>
+                      <td className="p-4 text-(--color-y2k-lime)">{user.username}</td>
                       <td className="p-4">
                         <span
                           className={`px-2 py-0.5 border-2 uppercase text-[9px] ${roleClass(user.role)}`}
@@ -250,10 +250,10 @@ const UserManagerTab = () => {
                           {user.role}
                         </span>
                       </td>
-                      <td className="p-4 text-gray-400 text-[10px]">
+                      <td className="p-4 text-(--color-y2k-text-muted) text-[10px]">
                         {formatDate(user.created_at)}
                       </td>
-                      <td className="p-4 text-gray-400 text-[10px]">
+                      <td className="p-4 text-(--color-y2k-text-muted) text-[10px]">
                         {formatDate(user.last_login)}
                       </td>
                       <td className="p-4">
@@ -277,7 +277,7 @@ const UserManagerTab = () => {
                               <button
                                 onClick={() => setDeleteConfirm(null)}
                                 disabled={actionLoading}
-                                className="text-gray-400 hover:text-gray-300 font-bold disabled:opacity-50"
+                                className="text-(--color-y2k-text-muted) hover:text-gray-300 font-bold disabled:opacity-50"
                               >
                                 Cancel
                               </button>
