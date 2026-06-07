@@ -1,23 +1,24 @@
 "use client"
 
-import { useState } from "react";
-import { Car, User, Lock, ShieldAlert, Eye, EyeOff } from "lucide-react";
 import Y2KCard from "@/components/ui/Y2KCard";
-import { AuthService } from "@/app/lib/authService";
-import { db } from "@/app/lib/firebase";
+import { Car, Eye, EyeOff, Lock, ShieldAlert, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-
+import { useState, type FormEvent } from "react";
 
 import { useAuth } from "@/app/context/AuthContext";
 
-const LoginPage = ({ onSwitch, onSuccess }: any) => {
+type LoginPageProps = {
+  onSuccess: () => void;
+};
+
+const LoginPage = ({ onSuccess }: LoginPageProps) => {
   const { signIn } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [credentials, setCredentials] = useState({ username: "", password: "", showPassword: false });
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -34,8 +35,9 @@ const LoginPage = ({ onSwitch, onSuccess }: any) => {
         console.log("Navigating to Dashboard...")
         router.push("/dashboard");
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || "ACCESS_DENIED");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "ACCESS_DENIED";
+      setError(message);
       setLoading(false);
     }
   };
@@ -79,10 +81,6 @@ const LoginPage = ({ onSwitch, onSuccess }: any) => {
             {loading ? "VERIFYING_HASH..." : "INITIATE_SESSION"}
           </button>
         </form>
-
-        <button onClick={onSwitch} className="w-full mt-6 text-[10px] text-gray-500 hover:text-(--color-y2k-lime) font-bold underline uppercase italic tracking-widest">
-          Register New Node
-        </button>
       </Y2KCard>
     </div>
   );
