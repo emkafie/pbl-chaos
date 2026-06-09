@@ -271,7 +271,7 @@ export default function DashboardPage() {
             />
           )}
           {activeTab === "users" && <div>{isAdmin && <UserManagerTab />}</div>}
-          {activeTab === "config" && <div>{isAdmin && <IotConfigPage />}</div>}
+          {activeTab === "config" && <div>{isAdmin && <IotConfigPage activeVehicles={activeVehicles} />}</div>}
           {activeTab === "history" && (
             <div>{isAdmin && <HistoryLogTab userRole="admin" />}</div>
           )}

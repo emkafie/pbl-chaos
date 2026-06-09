@@ -36,7 +36,11 @@ interface ParkingSession {
   duration_minutes?: number;
 }
 
-export default function IotConfigPage() {
+interface IotConfigPageProps {
+  activeVehicles?: string[];
+}
+
+export default function IotConfigPage({ activeVehicles }: IotConfigPageProps) {
   const [rawLogsInput, setRawLogsInput] = useState<string>("");
   const [parsedEvents, setParsedEvents] = useState<MqttEvent[]>([]);
   const [isReplaying, setIsReplaying] = useState<boolean>(false);
@@ -48,6 +52,11 @@ export default function IotConfigPage() {
   const [ongoingSessions, setOngoingSessions] = useState<ParkingSession[]>([]);
   // Individual warp duration state mapping: sessionId -> duration in minutes
   const [warpDurations, setWarpDurations] = useState<Record<string, number>>({});
+
+  // Filter ongoing sessions to only show vehicles currently inside the parking area
+  const displayedSessions = activeVehicles
+    ? ongoingSessions.filter((session) => activeVehicles.includes(session.rfid_uid))
+    : ongoingSessions;
 
   // Fetch ongoing sessions in real-time
   useEffect(() => {
@@ -326,17 +335,17 @@ export default function IotConfigPage() {
             </div>
 
             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-              {ongoingSessions.length === 0 ? (
+              {displayedSessions.length === 0 ? (
                 <div className="bg-(--color-y2k-bg-panel) border-2 border-dashed border-(--color-y2k-border) p-10 text-center">
                   <p className="text-sm text-(--color-y2k-text-muted) uppercase tracking-widest font-black">
-                    Tidak Ada Sesi Parkir Ongoing
+                    Tidak Ada Sesi Parkir Ongoing / Aktif
                   </p>
                   <p className="text-[10px] text-gray-600 mt-2">
                     Lakukan simulasi scan kartu masuk atau log replayer terlebih dahulu.
                   </p>
                 </div>
               ) : (
-                ongoingSessions.map((session) => {
+                displayedSessions.map((session) => {
                   const currentSelectedDuration = warpDurations[session.id] || 60; // default 1 hour
                   return (
                     <div 
