@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { adminDb } from "@/app/lib/firebaseAdmin";
+import { getAdminDb } from "@/app/lib/firebaseAdmin";
 import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Cek apakah username sudah terdaftar
-    const usersRef = adminDb.collection("users");
+    const usersRef = getAdminDb().collection("users");
     const snapshot = await usersRef.where("username", "==", username).get();
     if (!snapshot.empty) {
       return NextResponse.json(
@@ -65,7 +65,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Hapus dokumen user di Firestore
-    const userRef = adminDb.collection("users").doc(id);
+    const userRef = getAdminDb().collection("users").doc(id);
     await userRef.delete();
 
     return NextResponse.json({ success: true });
