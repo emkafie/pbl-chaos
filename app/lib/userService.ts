@@ -91,7 +91,7 @@ export const UserService = {
     }
   },
 
-  // CREATE: Buat user baru
+  // CREATE: Buat user baru (melalui API Route agar lolos aturan Firestore)
   createUser: async (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     database: any,
@@ -99,37 +99,21 @@ export const UserService = {
     password: string,
     role: "admin" | "operator" | "guest" = "operator",
   ): Promise<UserData> => {
-    if (!database) throw new Error("DATABASE_OFFLINE");
-
     try {
-      // Cek apakah username sudah ada
-      const usersRef = collection(database, "users");
-      const q = query(usersRef, where("username", "==", username));
-      const querySnapshot = await getDocs(q);
+      const response = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password, role }),
+      });
 
-      if (!querySnapshot.empty) {
-        throw new Error("USERNAME_ALREADY_EXISTS");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "CREATE_USER_FAILED");
       }
 
-      // Hash password
-      const hashedPassword = await UserService.hashPassword(password);
-
-      // Buat dokumen baru
-      const newUserRef = doc(collection(database, "users"));
-      const userData = {
-        username: username,
-        password: hashedPassword,
-        role: role,
-        created_at: new Date().toISOString(),
-        last_login: new Date().toISOString(),
-      };
-
-      await setDoc(newUserRef, userData);
-
-      return {
-        id: newUserRef.id,
-        ...userData,
-      };
+      return await response.json();
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw error;
@@ -204,14 +188,18 @@ export const UserService = {
     }
   },
 
-  // DELETE: Hapus user
+  // DELETE: Hapus user (melalui API Route agar lolos aturan Firestore)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   deleteUser: async (database: any, userId: string): Promise<void> => {
-    if (!database) throw new Error("DATABASE_OFFLINE");
-
     try {
-      const userRef = doc(database, "users", userId);
-      await deleteDoc(userRef);
+      const response = await fetch(`/api/admin/users?id=${userId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "DELETE_USER_FAILED");
+      }
     } catch (error) {
       console.error("Error deleting user:", error);
       throw new Error("DELETE_USER_FAILED");
