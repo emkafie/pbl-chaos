@@ -1,19 +1,20 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Terminal, Settings, Cpu, Clock, RefreshCw, Key, ShieldAlert } from "lucide-react";
 import {
-  collection,
   addDoc,
-  getDocs,
+  collection,
   doc,
-  updateDoc,
-  serverTimestamp,
-  query,
-  where,
+  getDocs,
   onSnapshot,
+  query,
+  serverTimestamp,
+  updateDoc,
+  where,
 } from "firebase/firestore";
+import { Clock, Cpu, Key, RefreshCw, Settings, ShieldAlert, Terminal } from "lucide-react";
+import { useEffect, useState } from "react";
 // Menggunakan jalur relatif untuk menghindari error resolusi alias
-import { db } from "@/app/lib/firebase"; 
+import { db } from "@/app/lib/firebase";
+import { RFIDCardService } from "@/app/lib/rfidCardService";
 import Y2KButton from "@/components/ui/Y2KButton";
 import Y2KCard from "@/components/ui/Y2KCard";
 
@@ -110,11 +111,32 @@ export default function IotConfigPage() {
         fee: fee,
       });
 
-      // Tulis log keberhasilan
-      setSimulationLogs(prev => [
-        `[TIME_WARP_CHECKOUT] UID: ${session.rfid_uid} | Warped ${durationMinutes} mins | Fee: Rp${fee.toLocaleString("id-ID")}`,
-        ...prev
-      ]);
+      // 💳 DEDUCT BALANCE FROM RFID CARD
+      try {
+        const newBalance = await RFIDCardService.deductBalance(db, session.rfid_uid, fee);
+        setSimulationLogs(prev => [
+          `[TIME_WARP_CHECKOUT] UID: ${session.rfid_uid} | Durasi: ${durationMinutes} menit | Biaya: Rp${fee.toLocaleString("id-ID")} | Saldo baru: Rp${newBalance.toLocaleString("id-ID")}`,
+          ...prev
+        ]);
+      } catch (balanceError: unknown) {
+        const errorMsg = balanceError instanceof Error ? balanceError.message : "Unknown error";
+        if (errorMsg === "INSUFFICIENT_BALANCE") {
+          setSimulationLogs(prev => [
+            `[TIME_WARP_CHECKOUT] ⚠️ Saldo kartu tidak cukup! UID: ${session.rfid_uid} | Dibutuhkan: Rp${fee.toLocaleString("id-ID")}`,
+            ...prev
+          ]);
+        } else if (errorMsg === "CARD_NOT_FOUND") {
+          setSimulationLogs(prev => [
+            `[TIME_WARP_CHECKOUT] ❌ Kartu tidak ditemukan di sistem! UID: ${session.rfid_uid}`,
+            ...prev
+          ]);
+        } else {
+          setSimulationLogs(prev => [
+            `[TIME_WARP_CHECKOUT] ❌ Error: ${errorMsg}`,
+            ...prev
+          ]);
+        }
+      }
 
       // Publish event checkout palsu ke MQTT agar hardware/sensor sinkron
       const client = (window as any).mqttClient;
@@ -128,7 +150,7 @@ export default function IotConfigPage() {
       console.error("Simulation checkout error:", e);
       setSimulationLogs(prev => [`[ERROR] Gagal memproses Time Warp Checkout: ${e.message}`, ...prev]);
     }
-  };
+  };;
 
   const handleParseLogs = () => {
     if (!rawLogsInput.trim()) return;

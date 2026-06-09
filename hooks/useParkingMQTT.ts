@@ -1,16 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
-import mqtt from 'mqtt';
-import { db, appId } from '@/app/lib/firebase';
-import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  doc, 
-  updateDoc, 
+import { appId, db } from '@/app/lib/firebase';
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  serverTimestamp,
   setDoc,
-  serverTimestamp 
+  updateDoc
 } from 'firebase/firestore';
+import mqtt from 'mqtt';
+import { useEffect, useRef, useState } from 'react';
 
+import { RFIDCardService } from '@/app/lib/rfidCardService';
 import { ParkingSlot } from '@/types';
 
 // Konfigurasi WebSockets HiveMQ Cloud menggunakan Env Variables dengan fallback otomatis
@@ -338,6 +339,24 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
                     duration_minutes: durationMinutes,
                     fee: fee
                   });
+
+                  // 💳 DEDUCT BALANCE FROM RFID CARD
+                  try {
+                    const newBalance = await RFIDCardService.deductBalance(db, uid, fee);
+                    setLastLog(`✅ Pembayaran berhasil! Saldo berkurang Rp${fee.toLocaleString("id-ID")}. Saldo baru: Rp${newBalance.toLocaleString("id-ID")}`);
+                  } catch (balanceError: unknown) {
+                    const errorMsg = balanceError instanceof Error ? balanceError.message : "Unknown error";
+                    if (errorMsg === "INSUFFICIENT_BALANCE") {
+                      setLastLog(`⚠️ PERINGATAN: Saldo kartu tidak cukup! Dibutuhkan: Rp${fee.toLocaleString("id-ID")}`);
+                      console.warn(`[CHECKOUT] Insufficient balance for card ${uid}. Required: Rp${fee}, Balance: insufficient`);
+                    } else if (errorMsg === "CARD_NOT_FOUND") {
+                      setLastLog(`❌ KESALAHAN: Kartu RFID tidak terdaftar dalam sistem pembayaran.`);
+                      console.error(`[CHECKOUT] RFID Card ${uid} not found in rfid_cards collection`);
+                    } else {
+                      setLastLog(`❌ KESALAHAN: Gagal memproses pembayaran. ${errorMsg}`);
+                      console.error(`[CHECKOUT] Balance deduction failed for ${uid}:`, balanceError);
+                    }
+                  }
                 }
               }
             }
