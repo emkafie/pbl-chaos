@@ -6,20 +6,6 @@ import { db } from "@/app/lib/firebase";
 import { AuthService } from "@/app/lib/authService";
 import { UserService, UserData } from "@/app/lib/userService";
 
-/**
- * AuthContext
- * -----------
- * Manages the current user session (persisted in localStorage).
- *
- * ❌ REMOVED: useEffect that called refreshUsers() on every mount
- *             → was reading the entire `users` collection on every page load.
- * ❌ REMOVED: onAuthStateChanged listener from Firebase Auth
- *             → was only logging to console but still opened a persistent connection.
- *
- * ✅ refreshUsers() is still available — the UserManager tab calls it explicitly
- *    when it needs the list (on-demand, not on boot).
- */
-
 interface AuthContextType {
   user: UserProfile | null;
   signIn: (username: string, password: string) => Promise<void>;
@@ -45,7 +31,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
 
-  // Restore session from localStorage on boot — zero Firestore reads
   useEffect(() => {
     const savedUser = localStorage.getItem("active_user");
     if (savedUser) {
@@ -59,7 +44,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(false);
   }, []);
 
-  // On-demand: fetch users list (called by UserManager tab, not on boot)
   const refreshUsers = async () => {
     setUsersLoading(true);
     setUsersError(null);
@@ -88,12 +72,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         role: profile.role,
         profilePicture: profile.profilePicture || "",
         lastLogin: new Date().toISOString(),
+        rfid_uid: profile.rfid_uid || "",
       };
 
       setUser(userProfile);
       localStorage.setItem("active_user", JSON.stringify(userProfile));
       document.cookie = "user_session=true; path=/;";
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const errorMessage = err.message || "Login failed";
       setError(errorMessage);

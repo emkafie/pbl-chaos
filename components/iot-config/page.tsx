@@ -13,7 +13,7 @@ import {
 import { Clock, Cpu, Key, RefreshCw, Settings, ShieldAlert, Terminal } from "lucide-react";
 import { useEffect, useState } from "react";
 // Menggunakan jalur relatif untuk menghindari error resolusi alias
-import { db } from "@/app/lib/firebase";
+import { db } from "@/app/lib/firebase"; 
 import { RFIDCardService } from "@/app/lib/rfidCardService";
 import Y2KButton from "@/components/ui/Y2KButton";
 import Y2KCard from "@/components/ui/Y2KCard";
@@ -110,41 +110,46 @@ export default function IotConfigPage({ activeVehicles }: IotConfigPageProps) {
       const checkOutTime = now;
       const fee = Math.ceil(durationMinutes / 60) * 5000;
 
-      // Update di Firestore
-      const sessionDocRef = doc(db, "sessions", session.id);
-      await updateDoc(sessionDocRef, {
-        status: "completed",
-        check_in: checkInTime.toISOString(),
-        check_out: checkOutTime.toISOString(),
-        duration_minutes: durationMinutes,
-        fee: fee,
+      // Gunakan API server-side untuk update session + potong saldo sekaligus (Admin SDK)
+      const res = await fetch("/api/parking/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: session.id,
+          rfid_uid: session.rfid_uid,
+          check_in: checkInTime.toISOString(),
+          check_out: checkOutTime.toISOString(),
+          duration_minutes: durationMinutes,
+          fee,
+        }),
       });
+      const result = await res.json();
 
-      // 💳 DEDUCT BALANCE FROM RFID CARD
-      try {
-        const newBalance = await RFIDCardService.deductBalance(db, session.rfid_uid, fee);
+      // Tulis log keberhasilan
+      setSimulationLogs(prev => [
+        `[TIME_WARP_CHECKOUT] UID: ${session.rfid_uid} | Warped ${durationMinutes} mins | Fee: Rp${fee.toLocaleString("id-ID")}`,
+        ...prev
+      ]);
+      if (result.deduction_error === "INSUFFICIENT_BALANCE") {
         setSimulationLogs(prev => [
-          `[TIME_WARP_CHECKOUT] UID: ${session.rfid_uid} | Durasi: ${durationMinutes} menit | Biaya: Rp${fee.toLocaleString("id-ID")} | Saldo baru: Rp${newBalance.toLocaleString("id-ID")}`,
+          `[TIME_WARP_CHECKOUT] ⚠️ Saldo tidak cukup! UID: ${session.rfid_uid} | Fee: Rp${fee.toLocaleString("id-ID")}`,
           ...prev
         ]);
-      } catch (balanceError: unknown) {
-        const errorMsg = balanceError instanceof Error ? balanceError.message : "Unknown error";
-        if (errorMsg === "INSUFFICIENT_BALANCE") {
-          setSimulationLogs(prev => [
-            `[TIME_WARP_CHECKOUT] ⚠️ Saldo kartu tidak cukup! UID: ${session.rfid_uid} | Dibutuhkan: Rp${fee.toLocaleString("id-ID")}`,
-            ...prev
-          ]);
-        } else if (errorMsg === "CARD_NOT_FOUND") {
-          setSimulationLogs(prev => [
-            `[TIME_WARP_CHECKOUT] ❌ Kartu tidak ditemukan di sistem! UID: ${session.rfid_uid}`,
-            ...prev
-          ]);
-        } else {
-          setSimulationLogs(prev => [
-            `[TIME_WARP_CHECKOUT] ❌ Error: ${errorMsg}`,
-            ...prev
-          ]);
-        }
+      } else if (result.deduction_error === "CARD_NOT_FOUND") {
+        setSimulationLogs(prev => [
+          `[TIME_WARP_CHECKOUT] ❌ Kartu tidak ditemukan! UID: ${session.rfid_uid}`,
+          ...prev
+        ]);
+      } else if (!res.ok) {
+        setSimulationLogs(prev => [
+          `[TIME_WARP_CHECKOUT] ❌ Gagal: ${result.error || "Unknown"}`,
+          ...prev
+        ]);
+      } else {
+        setSimulationLogs(prev => [
+          `[TIME_WARP_CHECKOUT] UID: ${session.rfid_uid} | Durasi: ${durationMinutes}m | Fee: Rp${fee.toLocaleString("id-ID")} | Saldo: Rp${result.new_balance?.toLocaleString("id-ID") ?? "N/A"}`,
+          ...prev
+        ]);
       }
 
       // Publish event checkout palsu ke MQTT agar hardware/sensor sinkron
@@ -209,11 +214,23 @@ export default function IotConfigPage({ activeVehicles }: IotConfigPageProps) {
             const q = await getDocs(collection(db, "sessions"));
             q.forEach(async (docSnap) => {
               if (docSnap.data().rfid_uid === payload.uid && docSnap.data().status === "ongoing") {
+                const checkIn = docSnap.data().check_in;
+                const durationMs = new Date(nowIso).getTime() - new Date(checkIn).getTime();
+                const durationMinutes = Math.max(1, Math.round(durationMs / 60000));
+                const fee = Math.ceil(durationMinutes / 60) * 5000;
+
                 await updateDoc(doc(db, "sessions", docSnap.id), { 
                   status: "completed", 
-                  check_out: nowIso, 
-                  fee: 5000 
+                  check_out: nowIso,
+                  duration_minutes: durationMinutes,
+                  fee,
                 });
+
+                try {
+                  await RFIDCardService.deductBalance(db, payload.uid, fee);
+                } catch (balanceErr) {
+                  console.warn("[REPLAY] Balance deduction failed:", balanceErr);
+                }
               }
             });
             setSimulationLogs(prev => [`[REPLAY] Terdaftar Check-Out UID: ${payload.uid}`, ...prev]);

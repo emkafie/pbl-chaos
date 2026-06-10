@@ -1,11 +1,10 @@
 import {
     doc,
     getDoc,
-    updateDoc
 } from "firebase/firestore";
 
 export interface RFIDCardData {
-  id: string; // RFID UID
+  id: string;
   saldo: number;
   owner?: string;
   last_transaction?: string;
@@ -13,7 +12,6 @@ export interface RFIDCardData {
 }
 
 export const RFIDCardService = {
-  // READ: Get card balance by RFID UID
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getCardBalance: async (database: any, rfidUid: string): Promise<RFIDCardData | null> => {
     if (!database) throw new Error("DATABASE_OFFLINE");
@@ -39,42 +37,31 @@ export const RFIDCardService = {
     }
   },
 
-  // UPDATE: Deduct balance from RFID card when checking out
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   deductBalance: async (
     database: any,
     rfidUid: string,
     amount: number,
   ): Promise<number> => {
-    if (!database) throw new Error("DATABASE_OFFLINE");
-
     try {
-      const cardRef = doc(database, "rfid_cards", rfidUid);
-      const cardDoc = await getDoc(cardRef);
-
-      if (!cardDoc.exists()) {
-        throw new Error("CARD_NOT_FOUND");
-      }
-
-      const currentBalance = cardDoc.data().saldo || 0;
-
-      // Check if balance is sufficient
-      if (currentBalance < amount) {
-        throw new Error("INSUFFICIENT_BALANCE");
-      }
-
-      // Deduct balance
-      const newBalance = currentBalance - amount;
-      await updateDoc(cardRef, {
-        saldo: newBalance,
-        last_transaction: new Date().toISOString(),
+      const response = await fetch("/api/guest/deduct", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rfid_uid: rfidUid, amount }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "DEDUCT_BALANCE_FAILED");
+      }
+
+      const data = await response.json();
+
       console.log(
-        `✅ Balance deducted for ${rfidUid}: Rp${amount.toLocaleString("id-ID")} | New balance: Rp${newBalance.toLocaleString("id-ID")}`,
+        `✅ Balance deducted for ${rfidUid}: Rp${amount.toLocaleString("id-ID")} | New balance: Rp${data.saldo.toLocaleString("id-ID")}`,
       );
 
-      return newBalance;
+      return data.saldo;
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (
@@ -89,36 +76,31 @@ export const RFIDCardService = {
     }
   },
 
-  // UPDATE: Add balance to RFID card (for top-up)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addBalance: async (
     database: any,
     rfidUid: string,
     amount: number,
   ): Promise<number> => {
-    if (!database) throw new Error("DATABASE_OFFLINE");
-
     try {
-      const cardRef = doc(database, "rfid_cards", rfidUid);
-      const cardDoc = await getDoc(cardRef);
-
-      if (!cardDoc.exists()) {
-        throw new Error("CARD_NOT_FOUND");
-      }
-
-      const currentBalance = cardDoc.data().saldo || 0;
-      const newBalance = currentBalance + amount;
-
-      await updateDoc(cardRef, {
-        saldo: newBalance,
-        last_transaction: new Date().toISOString(),
+      const response = await fetch("/api/guest/deduct", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rfid_uid: rfidUid, amount: -amount }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "ADD_BALANCE_FAILED");
+      }
+
+      const data = await response.json();
+
       console.log(
-        `✅ Balance added for ${rfidUid}: Rp${amount.toLocaleString("id-ID")} | New balance: Rp${newBalance.toLocaleString("id-ID")}`,
+        `✅ Balance added for ${rfidUid}: Rp${amount.toLocaleString("id-ID")} | New balance: Rp${data.saldo.toLocaleString("id-ID")}`,
       );
 
-      return newBalance;
+      return data.saldo;
     } catch (error: unknown) {
       if (error instanceof Error && error.message === "CARD_NOT_FOUND") {
         throw error;

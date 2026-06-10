@@ -55,6 +55,7 @@ const UserManagerTab = () => {
             formData.username,
             formData.password,
             formData.role,
+            formData.rfid_uid,
           );
         }
         await refreshUsers();
@@ -172,6 +173,14 @@ const UserManagerTab = () => {
                     </span>
                   </div>
 
+                  {/* RFID UID for guest users */}
+                  {user.role === "guest" && user.rfid_uid && (
+                    <div className="text-[10px] font-bold">
+                      <span className="text-(--color-y2k-purple) uppercase text-[9px]">RFID Card</span>
+                      <p className="text-(--color-y2k-text-muted) font-mono">{user.rfid_uid}</p>
+                    </div>
+                  )}
+
                   {/* Dates */}
                   <div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-(--color-y2k-text-muted)">
                     <div>
@@ -231,6 +240,7 @@ const UserManagerTab = () => {
                   <tr className="uppercase text-(--color-y2k-purple) italic">
                     <th className="p-4">User_Identity</th>
                     <th className="p-4">Access_Role</th>
+                    <th className="p-4">RFID_Card</th>
                     <th className="p-4">Created_At</th>
                     <th className="p-4">Last_Session</th>
                     <th className="p-4 text-center">Actions</th>
@@ -249,6 +259,11 @@ const UserManagerTab = () => {
                         >
                           {user.role}
                         </span>
+                      </td>
+                      <td className="p-4 text-(--color-y2k-text-muted) text-[10px] font-mono">
+                        {user.role === "guest" && user.rfid_uid
+                          ? user.rfid_uid
+                          : "\u2014"}
                       </td>
                       <td className="p-4 text-(--color-y2k-text-muted) text-[10px]">
                         {formatDate(user.created_at)}

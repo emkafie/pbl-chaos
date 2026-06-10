@@ -3,14 +3,13 @@ import { getFirestore } from "firebase-admin/firestore";
 import fs from "fs";
 import path from "path";
 
-let dbInstance: any = null;
+let _adminDb: ReturnType<typeof getFirestore> | null = null;
+let _initError: string | null = null;
 
-export function getAdminDb() {
-  if (dbInstance) return dbInstance;
+function initAdminDb(): ReturnType<typeof getFirestore> | null {
+  let serviceAccount: Record<string, unknown> | undefined;
 
-  let serviceAccount;
   const serviceAccountPath = path.resolve(process.cwd(), "service-account.json");
-
   if (fs.existsSync(serviceAccountPath)) {
     try {
       serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
@@ -26,17 +25,29 @@ export function getAdminDb() {
   }
 
   if (!serviceAccount) {
-    throw new Error(
-      "Firebase Admin credentials not found. Please place service-account.json at the project root or configure the FIREBASE_SERVICE_ACCOUNT env variable."
-    );
+    _initError = "Firebase Admin credentials not found. API routes will fallback to client SDK.";
+    console.warn("[firebaseAdmin]", _initError);
+    return null;
   }
 
-  const app = getApps().length > 0
-    ? getApp()
-    : initializeApp({
-        credential: cert(serviceAccount),
-      });
+  try {
+    const app = getApps().length > 0
+      ? getApp()
+      : initializeApp({ credential: cert(serviceAccount as any) });
 
-  dbInstance = getFirestore(app);
-  return dbInstance;
+    return getFirestore(app);
+  } catch (err) {
+    _initError = "Firebase Admin init failed: " + (err instanceof Error ? err.message : String(err));
+    console.warn("[firebaseAdmin]", _initError);
+    return null;
+  }
 }
+
+export function getAdminDb(): ReturnType<typeof getFirestore> | null {
+  if (_adminDb !== null) return _adminDb;
+  if (_initError !== null) return null;
+  _adminDb = initAdminDb();
+  return _adminDb;
+}
+
+export { _initError as adminInitError };

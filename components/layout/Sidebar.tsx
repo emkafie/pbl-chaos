@@ -9,6 +9,7 @@ import {
   Settings,
   LogOut,
   Clock,
+  CreditCard,
 } from "lucide-react";
 import { NavItemProps } from "@/types";
 import { useAuth } from "@/app/context/AuthContext";
@@ -38,7 +39,6 @@ interface SidebarProps {
   activeTab: string;
   setActiveTab: (t: string) => void;
   onLogout: () => void;
-  /** Called when the mobile backdrop is clicked so the parent can close the sidebar */
   onClose?: () => void;
 }
 
@@ -53,7 +53,6 @@ export const Sidebar = ({
 
   const handleNavClick = (tab: string) => {
     setActiveTab(tab);
-    // Close the drawer on mobile after selecting a tab
     if (window.innerWidth < 1024) {
       onClose?.();
     }
@@ -61,7 +60,6 @@ export const Sidebar = ({
 
   return (
     <>
-      {/* ── Mobile backdrop overlay ─────────────────────────── */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
@@ -70,7 +68,6 @@ export const Sidebar = ({
         />
       )}
 
-      {/* ── Sidebar panel ───────────────────────────────────── */}
       <aside
         className={`
           fixed md:relative inset-y-0 left-0 z-50
@@ -83,12 +80,10 @@ export const Sidebar = ({
           }
         `}
       >
-        {/* Logo */}
         <div className="p-6 flex items-center gap-3">
           <div className="bg-(--color-y2k-lime) p-2 border-2 border-(--color-y2k-solid-border)">
             <Car className="text-(--color-y2k-button-text)" size={20} />
           </div>
-          {/* Always show text on mobile drawer; on desktop respect collapsed state */}
           <span
             className={`font-black text-xl italic tracking-tighter text-(--color-y2k-lime) ${
               !isOpen ? "md:hidden" : ""
@@ -98,7 +93,6 @@ export const Sidebar = ({
           </span>
         </div>
 
-        {/* Nav items */}
         <nav className="mt-10 px-4 space-y-4">
           <NavItem
             icon={<LayoutDashboard size={20} />}
@@ -107,15 +101,26 @@ export const Sidebar = ({
             onClick={() => handleNavClick("overview")}
             collapsed={!isOpen}
           />
-          <NavItem
-            icon={<MapPin size={20} />}
-            label="Live Map"
-            active={activeTab === "map"}
-            onClick={() => handleNavClick("map")}
-            collapsed={!isOpen}
-          />
+          {user?.role !== "guest" && (
+            <NavItem
+              icon={<MapPin size={20} />}
+              label="Live Map"
+              active={activeTab === "map"}
+              onClick={() => handleNavClick("map")}
+              collapsed={!isOpen}
+            />
+          )}
 
-          {/* Admin Menu */}
+          {user?.role === "guest" && user?.rfid_uid && (
+            <NavItem
+              icon={<CreditCard size={20} />}
+              label="My Parking"
+              active={activeTab === "guest-parking"}
+              onClick={() => handleNavClick("guest-parking")}
+              collapsed={!isOpen}
+            />
+          )}
+
           {user?.role === "admin" && (
             <>
               <div

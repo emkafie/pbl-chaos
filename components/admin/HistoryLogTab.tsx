@@ -35,22 +35,18 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [dataSource, setDataSource] = useState("");
 
-  // Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [vehicleTypeFilter, setVehicleTypeFilter] = useState<string>("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // Sorting
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Cache for data
   const cache = useRef<ParkingSession[] | null>(null);
 
   const fetchSessions = async (forceRefresh = false) => {
@@ -73,17 +69,13 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
     }
   };
 
-  // Fetch on mount
   useEffect(() => {
     fetchSessions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Apply filters and sorting
   const processedSessions = useMemo(() => {
     let result = [...sessions];
 
-    // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter(
@@ -93,17 +85,14 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
       );
     }
 
-    // Status filter
     if (statusFilter) {
       result = result.filter((s) => s.status === statusFilter);
     }
 
-    // Vehicle type filter
     if (vehicleTypeFilter) {
       result = result.filter((s) => s.vehicle_type === vehicleTypeFilter);
     }
 
-    // Date range filter
     if (startDate || endDate) {
       result = result.filter((s) => {
         const sessionDate = new Date(s.created_at);
@@ -117,13 +106,11 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
       });
     }
 
-    // Sorting
     result.sort((a, b) => {
       let aVal: number = 0,
         bVal: number = 0;
 
       if (sortField === "created_at") {
-        // Handle Firestore Timestamp or ISO string
         const aDate =
           a.created_at?.toDate?.() ||
           (typeof a.created_at === "string"
@@ -160,14 +147,12 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
     sortOrder,
   ]);
 
-  // Pagination
   const totalPages = Math.ceil(processedSessions.length / itemsPerPage);
   const paginatedSessions = processedSessions.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
 
-  // Calculate stats
   const stats = useMemo(() => {
     return {
       total: processedSessions.length,
@@ -227,7 +212,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         <Y2KCard title="TOTAL_SESSIONS" className="text-center">
           <p className="text-(--color-y2k-lime) font-black text-3xl sm:text-4xl">
@@ -261,7 +245,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
         </Y2KCard>
       </div>
 
-      {/* Filter Section */}
       <Y2KCard
         title="FILTERS"
         icon={Filter}
@@ -276,7 +259,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
         }
       >
         <div className="space-y-4">
-          {/* Search */}
           <div>
             <label className="text-gray-500 text-xs font-bold uppercase tracking-wider block mb-2">
               Search RFID / Slot
@@ -299,9 +281,7 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
             </div>
           </div>
 
-          {/* Filter Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Status Filter */}
             <div>
               <label className="text-gray-500 text-xs font-bold uppercase tracking-wider block mb-2">
                 Status
@@ -321,7 +301,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
               </select>
             </div>
 
-            {/* Vehicle Type Filter */}
             <div>
               <label className="text-gray-500 text-xs font-bold uppercase tracking-wider block mb-2">
                 Vehicle Type
@@ -341,7 +320,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
               </select>
             </div>
 
-            {/* Start Date */}
             <div>
               <label className="text-gray-500 text-xs font-bold uppercase tracking-wider block mb-2">
                 Start Date
@@ -357,7 +335,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
               />
             </div>
 
-            {/* End Date */}
             <div>
               <label className="text-gray-500 text-xs font-bold uppercase tracking-wider block mb-2">
                 End Date
@@ -374,7 +351,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
             </div>
           </div>
 
-          {/* Clear Filters */}
           {(searchQuery ||
             statusFilter ||
             vehicleTypeFilter ||
@@ -397,7 +373,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
         </div>
       </Y2KCard>
 
-      {/* Table Section */}
       <Y2KCard title="SESSION_HISTORY">
         {loading ? (
           <div className="text-center py-8 text-(--color-y2k-lime) font-black uppercase">
@@ -422,7 +397,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
               </colgroup>
               <thead>
                 <tr className="border-b-2 border-(--color-y2k-lime) text-(--color-y2k-lime) font-bold align-middle">
-                  {/* Basic Columns */}
                   <th className="text-left p-3 font-black uppercase whitespace-nowrap">
                     RFID_UID
                   </th>
@@ -432,8 +406,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
                   <th className="text-left p-3 font-black uppercase whitespace-nowrap">
                     VEHICLE
                   </th>
-
-                  {/* Sortable Columns */}
                   <th
                     className="text-left p-3 font-black uppercase cursor-pointer hover:text-(--color-y2k-purple) transition-all whitespace-nowrap"
                     onClick={() => handleSort("created_at")}
@@ -482,8 +454,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
                       }`}
                     />
                   </th>
-
-                  {/* Action Columns */}
                   <th className="text-left p-3 font-black uppercase whitespace-nowrap">
                     STATUS
                   </th>
@@ -543,7 +513,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-6 pt-6 border-t-2 border-(--color-y2k-border)">
             <button
@@ -599,7 +568,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
           </div>
         )}
 
-        {/* Data Source Info */}
         {dataSource && (
           <div className="mt-4 text-[9px] text-gray-500 uppercase tracking-widest font-bold">
             Data_Source: {dataSource}
@@ -607,7 +575,6 @@ export default function HistoryLogTab({ userRole }: HistoryLogTabProps) {
         )}
       </Y2KCard>
 
-      {/* Detail Modal */}
       <SessionDetailModal
         session={selectedSession}
         isOpen={isDetailOpen}

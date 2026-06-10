@@ -6,7 +6,9 @@ import {
   getDocs,
   serverTimestamp,
   setDoc,
-  updateDoc
+  serverTimestamp,
+  query,
+  where
 } from 'firebase/firestore';
 import mqtt from 'mqtt';
 import { useEffect, useRef, useState } from 'react';
@@ -67,6 +69,7 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
 
   const mqttClientRef = useRef<mqtt.MqttClient | null>(null);
   const dbSlotsRef = useRef<ParkingSlot[]>(dbSlots);
+  const lastEventCache = useRef<Map<string, { event: string; timestamp: number }>>(new Map());
 
   // Sinkronkan referensi data slot database terbaru tanpa memutus ulang koneksi MQTT
   useEffect(() => {
@@ -185,7 +188,7 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
     }
 
     client.on('connect', () => {
-      if (!isMounted) return;
+      if (client !== mqttClientRef.current) return;
       setConnected(true);
       if (typeof window !== 'undefined') {
         (window as any).mqttClient = client;
@@ -214,7 +217,7 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
     });
 
     client.on('message', async (topic, message) => {
-      if (!isMounted) return;
+      if (client !== mqttClientRef.current) return;
       const payloadString = message.toString();
 
       try {
@@ -237,40 +240,32 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
         else if (topic === 'parking/slot/status') {
           const slotStatus = safeJsonParse(payloadString);
           if (slotStatus && Array.isArray(slotStatus.slot)) {
-            const slotArray = slotStatus.slot;
+            setSlotOnline(true);
+            setLastLog(`INFO_LOG: Sinkronisasi slot parkir diterima.`);
+            
+            try {
+              const slotArray = slotStatus.slot;
+              const targetSlots = [...dbSlotsRef.current].sort((a, b) => a.id.localeCompare(b.id));
+              
+              for (let index = 0; index < slotArray.length; index++) {
+                if (index < targetSlots.length) {
+                  const item = targetSlots[index];
+                  const newStatus = slotArray[index] === 1 ? 'occupied' : 'available';
 
-            // Menggunakan database slots paling mutakhir dari referensi penamaan A01, A02, A03, A04
-            const currentSlotsInDb = dbSlotsRef.current;
-            const targetSlots = currentSlotsInDb.length > 0 ? currentSlotsInDb : [
-              { id: "A01", status: "available" as const, type: "car" as const },
-              { id: "A02", status: "available" as const, type: "car" as const },
-              { id: "A03", status: "available" as const, type: "car" as const },
-              { id: "A04", status: "available" as const, type: "car" as const },
-            ];
-
-            targetSlots.forEach((item, index) => {
-              if (index < slotArray.length) {
-                const newStatus = slotArray[index] === 1 ? 'occupied' : 'available';
-                
-                // Tulis ke Firestore HANYA jika status berubah dibanding data DB
-                if (item.status !== newStatus) {
-                  const slotDocPath = `parking_slots/${item.id}`;
-                  
-                  setDoc(doc(db, slotDocPath), {
-                    id: item.id,
-                    status: newStatus,
-                    last_updated: serverTimestamp()
-                  }, { merge: true })
-                  .then(() => {
-                    console.log(`💾 BRIDGE_SUCCESS: Status slot ${item.id} berhasil di-sync ke Firestore -> ${newStatus}`);
-                  })
-                  .catch((err) => {
-                    console.error(`❌ BRIDGE_ERROR: Gagal menulis data slot ${item.id} ke Firestore:`, err);
-                  });
+                  if (item.status !== newStatus) {
+                    const slotDocRef = doc(db, "parking_slots", item.id);
+                    await setDoc(slotDocRef, {
+                      id: item.id,
+                      status: newStatus,
+                      last_updated: serverTimestamp()
+                    }, { merge: true });
+                    console.log(`💾 Sync slot ${item.id} status to ${newStatus} client-side`);
+                  }
                 }
               }
-            });
-            setSlotOnline(true);
+            } catch (err) {
+              console.error("❌ Error syncing slot status client-side:", err);
+            }
           }
         }
 
@@ -289,75 +284,120 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
           const eventData = safeJsonParse(payloadString);
           if (eventData) {
             const { event, uid } = eventData;
-            const nowIso = new Date().toISOString();
 
             if (event === 'MASUK_DIIZINKAN') {
               setLastLog(`AKSES_DIIZINKAN: ID Kartu ${uid} telah masuk gerbang.`);
+              
+              // 1. Debounce local MQTT event bounces (e.g. 20 seconds)
+              const last = lastEventCache.current.get(uid);
+              const now = Date.now();
+              if (last && last.event === event && (now - last.timestamp) < 20000) {
+                console.log(`⚠️ Ignored duplicate bounced check-in event [${event}] for RFID ${uid}`);
+                return;
+              }
+              lastEventCache.current.set(uid, { event, timestamp: now });
 
-              if (db && appId) {
-                const sessionPath = `sessions`;
-                await addDoc(collection(db, sessionPath), {
+              try {
+                // 2. Query Firestore to verify no ongoing session exists for this card
+                const sessionsRef = collection(db, "sessions");
+                const q = query(
+                  sessionsRef,
+                  where("rfid_uid", "==", uid),
+                  where("status", "==", "ongoing")
+                );
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                  console.log(`⚠️ Card ${uid} already has an ongoing session. Skipping duplicate check-in.`);
+                  return;
+                }
+
+                // 3. Create the session
+                const nowIso = new Date().toISOString();
+                const newSessionRef = await addDoc(sessionsRef, {
                   rfid_uid: uid,
                   vehicle_type: "car",
-                  slot_id: "PENDING_SENSOR", 
+                  slot_id: "PENDING_SENSOR",
                   check_in: nowIso,
                   check_out: null,
                   duration_minutes: 0,
                   fee: 0,
                   status: "ongoing",
-                  created_at: serverTimestamp()
+                  created_at: serverTimestamp(),
+                  created_by: "client_hook"
                 });
+                console.log(`✅ Session created successfully client-side: ${newSessionRef.id} for RFID ${uid}.`);
+              } catch (err) {
+                console.error("❌ Error creating session client-side:", err);
               }
             } 
             else if (event === 'KELUAR_DIIZINKAN') {
               setLastLog(`AKSES_DIIZINKAN: ID Kartu ${uid} telah keluar gerbang.`);
 
-              if (db && appId) {
-                const sessionPath = `sessions`;
-                const querySnapshot = await getDocs(collection(db, sessionPath));
-                let ongoingDocId = null;
-                let checkInTime = null;
+              // 1. Debounce local MQTT event bounces
+              const last = lastEventCache.current.get(uid);
+              const now = Date.now();
+              if (last && last.event === event && (now - last.timestamp) < 20000) {
+                console.log(`⚠️ Ignored duplicate bounced check-out event [${event}] for RFID ${uid}`);
+                return;
+              }
+              lastEventCache.current.set(uid, { event, timestamp: now });
 
-                querySnapshot.forEach((doc) => {
-                  const data = doc.data();
-                  if (data.rfid_uid === uid && data.status === "ongoing") {
-                    ongoingDocId = doc.id;
-                    checkInTime = data.check_in;
-                  }
-                });
+              try {
+                // 2. Query Firestore for the ongoing session
+                const sessionsRef = collection(db, "sessions");
+                const q = query(
+                  sessionsRef,
+                  where("rfid_uid", "==", uid),
+                  where("status", "==", "ongoing")
+                );
+                const querySnapshot = await getDocs(q);
 
-                if (ongoingDocId && checkInTime) {
-                  const checkOutTime = nowIso;
+                if (!querySnapshot.empty) {
+                  // Pick the oldest ongoing session just in case of duplicates
+                  const docs = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                  } as any));
+                  
+                  docs.sort((a, b) => new Date(a.check_in).getTime() - new Date(b.check_in).getTime());
+                  const activeSession = docs[0];
+
+                  const checkInTime = activeSession.check_in;
+                  const checkOutTime = new Date().toISOString();
                   const durationMs = new Date(checkOutTime).getTime() - new Date(checkInTime).getTime();
                   const durationMinutes = Math.max(1, Math.round(durationMs / 60000));
                   const fee = Math.ceil(durationMinutes / 60) * 5000;
 
-                  const docRef = doc(db, sessionPath, ongoingDocId);
-                  await updateDoc(docRef, {
-                    status: "completed",
-                    check_out: checkOutTime,
-                    duration_minutes: durationMinutes,
-                    fee: fee
+                  console.log(`🚪 RFID CARD ${uid} exiting... Calling secure checkout API for session ${activeSession.id}`);
+
+                  // 3. Call checkout API to securely update session and deduct balance
+                  const res = await fetch("/api/parking/checkout", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      session_id: activeSession.id,
+                      rfid_uid: uid,
+                      check_in: checkInTime,
+                      check_out: checkOutTime,
+                      duration_minutes: durationMinutes,
+                      fee: fee,
+                    }),
                   });
 
-                  // 💳 DEDUCT BALANCE FROM RFID CARD
-                  try {
-                    const newBalance = await RFIDCardService.deductBalance(db, uid, fee);
-                    setLastLog(`✅ Pembayaran berhasil! Saldo berkurang Rp${fee.toLocaleString("id-ID")}. Saldo baru: Rp${newBalance.toLocaleString("id-ID")}`);
-                  } catch (balanceError: unknown) {
-                    const errorMsg = balanceError instanceof Error ? balanceError.message : "Unknown error";
-                    if (errorMsg === "INSUFFICIENT_BALANCE") {
-                      setLastLog(`⚠️ PERINGATAN: Saldo kartu tidak cukup! Dibutuhkan: Rp${fee.toLocaleString("id-ID")}`);
-                      console.warn(`[CHECKOUT] Insufficient balance for card ${uid}. Required: Rp${fee}, Balance: insufficient`);
-                    } else if (errorMsg === "CARD_NOT_FOUND") {
-                      setLastLog(`❌ KESALAHAN: Kartu RFID tidak terdaftar dalam sistem pembayaran.`);
-                      console.error(`[CHECKOUT] RFID Card ${uid} not found in rfid_cards collection`);
-                    } else {
-                      setLastLog(`❌ KESALAHAN: Gagal memproses pembayaran. ${errorMsg}`);
-                      console.error(`[CHECKOUT] Balance deduction failed for ${uid}:`, balanceError);
-                    }
+                  const resData = await res.json();
+                  if (resData.success) {
+                    console.log(`✅ Checkout successful client-side for RFID ${uid}. New balance: Rp${resData.new_balance}`);
+                  } else {
+                    console.error(`❌ Checkout API returned error:`, resData.error || resData.deduction_error);
                   }
+                } else {
+                  console.warn(`⚠️ No ongoing parking session found for RFID ${uid}.`);
                 }
+              } catch (err) {
+                console.error("❌ Error during check-out client-side:", err);
               }
             }
           }
@@ -368,14 +408,14 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
       }
     });
 
-    client.on('error', (err: any) => {
-      if (!isMounted) return;
-      console.warn('MQTT Cloud Connection Error:', err.message || err);
+    client.on('error', (err) => {
+      if (client !== mqttClientRef.current) return;
+      console.error('MQTT Cloud Error:', err);
       setConnected(false);
     });
 
     client.on('close', () => {
-      if (!isMounted) return;
+      if (client !== mqttClientRef.current) return;
       setConnected(false);
       setGateOnline(false);
       setSlotOnline(false);
@@ -384,10 +424,9 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
     return () => {
       isMounted = false;
       if (client) {
-        try {
-          client.end(true);
-        } catch (e) {
-          console.warn("Exception while ending MQTT client:", e);
+        client.end();
+        if (mqttClientRef.current === client) {
+          mqttClientRef.current = null;
         }
         if (typeof window !== 'undefined' && (window as any).mqttClient === client) {
           (window as any).mqttClient = null;
