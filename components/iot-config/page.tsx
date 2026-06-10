@@ -14,6 +14,7 @@ import {
 } from "firebase/firestore";
 // Menggunakan jalur relatif untuk menghindari error resolusi alias
 import { db } from "@/app/lib/firebase"; 
+import { RFIDCardService } from "@/app/lib/rfidCardService";
 import Y2KButton from "@/components/ui/Y2KButton";
 import Y2KCard from "@/components/ui/Y2KCard";
 

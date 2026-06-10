@@ -1,7 +1,7 @@
 "use client";
 
 import Y2KCard from "@/components/ui/Y2KCard";
-import { CreditCard, Clock, AlertCircle, Car, ChevronLeft, ChevronRight } from "lucide-react";
+import { CreditCard, Clock, AlertCircle, Car, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { useState, useEffect, useCallback, useMemo } from "react";
 
 interface BalanceData {
@@ -32,13 +32,21 @@ export default function GuestTab({ rfidUid }: GuestTabProps) {
   const [balance, setBalance] = useState<BalanceData | null>(null);
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (isRefresh = false) => {
     if (!rfidUid) return;
 
     try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
+      
       const [balanceRes, historyRes] = await Promise.all([
         fetch(`/api/guest/balance?rfid_uid=${encodeURIComponent(rfidUid)}`),
         fetch(`/api/guest/history?rfid_uid=${encodeURIComponent(rfidUid)}`),
@@ -63,13 +71,12 @@ export default function GuestTab({ rfidUid }: GuestTabProps) {
       setError(err instanceof Error ? err.message : "Failed to load parking data");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [rfidUid]);
 
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
+    fetchData(false);
   }, [fetchData]);
 
   useEffect(() => {
@@ -124,7 +131,21 @@ export default function GuestTab({ rfidUid }: GuestTabProps) {
     <div className="w-full space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="sm:col-span-2">
-          <Y2KCard title="Card_Status" variant="lime" className="h-full">
+          <Y2KCard 
+            title="Card_Status" 
+            variant="lime" 
+            className="h-full"
+            headerAction={
+              <button 
+                onClick={() => fetchData(true)} 
+                disabled={refreshing}
+                className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-(--color-y2k-lime) text-(--color-y2k-lime) text-[10px] font-black uppercase tracking-wider hover:bg-(--color-y2k-lime)/10 transition-all cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
+                {refreshing ? "Refreshing..." : "Refresh"}
+              </button>
+            }
+          >
             {!rfidUid ? (
               <div className="p-4 bg-(--color-y2k-border)/10 border-2 border-(--color-y2k-border) text-center">
                 <CreditCard size={32} className="mx-auto mb-3 text-(--color-y2k-text-muted)" />

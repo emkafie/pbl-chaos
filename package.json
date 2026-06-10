@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "simulate-mqtt": "bun run scripts/simulate-mqtt.ts",
+    "reset-test": "bun run scripts/reset-test.ts"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
