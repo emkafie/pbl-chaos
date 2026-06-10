@@ -3,6 +3,7 @@ import {
   addDoc,
   collection,
   doc,
+  getDoc,
   getDocs,
   serverTimestamp,
   setDoc,
@@ -297,23 +298,18 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
               lastEventCache.current.set(uid, { event, timestamp: now });
 
               try {
-                // 2. Query Firestore to verify no ongoing session exists for this card
-                const sessionsRef = collection(db, "sessions");
-                const q = query(
-                  sessionsRef,
-                  where("rfid_uid", "==", uid),
-                  where("status", "==", "ongoing")
-                );
-                const querySnapshot = await getDocs(q);
+                // 2. Verify no ongoing session document exists for this card
+                const sessionDocRef = doc(db, "sessions", `${uid}_ongoing`);
+                const docSnap = await getDoc(sessionDocRef);
 
-                if (!querySnapshot.empty) {
+                if (docSnap.exists() && docSnap.data().status === "ongoing") {
                   console.log(`⚠️ Card ${uid} already has an ongoing session. Skipping duplicate check-in.`);
                   return;
                 }
 
                 // 3. Create the session
                 const nowIso = new Date().toISOString();
-                const newSessionRef = await addDoc(sessionsRef, {
+                await setDoc(sessionDocRef, {
                   rfid_uid: uid,
                   vehicle_type: "car",
                   slot_id: "PENDING_SENSOR",
@@ -325,7 +321,7 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
                   created_at: serverTimestamp(),
                   created_by: "client_hook"
                 });
-                console.log(`✅ Session created successfully client-side: ${newSessionRef.id} for RFID ${uid}.`);
+                console.log(`✅ Session created successfully client-side: ${sessionDocRef.id} for RFID ${uid}.`);
               } catch (err) {
                 console.error("❌ Error creating session client-side:", err);
               }
@@ -343,32 +339,19 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
               lastEventCache.current.set(uid, { event, timestamp: now });
 
               try {
-                // 2. Query Firestore for the ongoing session
-                const sessionsRef = collection(db, "sessions");
-                const q = query(
-                  sessionsRef,
-                  where("rfid_uid", "==", uid),
-                  where("status", "==", "ongoing")
-                );
-                const querySnapshot = await getDocs(q);
+                // 2. Get the ongoing session document
+                const sessionDocRef = doc(db, "sessions", `${uid}_ongoing`);
+                const docSnap = await getDoc(sessionDocRef);
 
-                if (!querySnapshot.empty) {
-                  // Pick the oldest ongoing session just in case of duplicates
-                  const docs = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                  } as any));
-                  
-                  docs.sort((a, b) => new Date(a.check_in).getTime() - new Date(b.check_in).getTime());
-                  const activeSession = docs[0];
-
-                  const checkInTime = activeSession.check_in;
+                if (docSnap.exists() && docSnap.data().status === "ongoing") {
+                  const sessionData = docSnap.data();
+                  const checkInTime = sessionData.check_in;
                   const checkOutTime = new Date().toISOString();
                   const durationMs = new Date(checkOutTime).getTime() - new Date(checkInTime).getTime();
                   const durationMinutes = Math.max(1, Math.round(durationMs / 60000));
                   const fee = Math.ceil(durationMinutes / 60) * 5000;
 
-                  console.log(`🚪 RFID CARD ${uid} exiting... Calling secure checkout API for session ${activeSession.id}`);
+                  console.log(`🚪 RFID CARD ${uid} exiting... Calling secure checkout API for session ${sessionDocRef.id}`);
 
                   // 3. Call checkout API to securely update session and deduct balance
                   const res = await fetch("/api/parking/checkout", {
@@ -377,7 +360,7 @@ export const useMqttParking = (dbSlots: ParkingSlot[]) => {
                       "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                      session_id: activeSession.id,
+                      session_id: sessionDocRef.id,
                       rfid_uid: uid,
                       check_in: checkInTime,
                       check_out: checkOutTime,
