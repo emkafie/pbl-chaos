@@ -8,6 +8,7 @@ export interface UserProfile {
   role: UserRole;
   profilePicture?: string;
   lastLogin?: string;
+  rfid_uid?: string;
 }
 
 export interface ParkingSlot {

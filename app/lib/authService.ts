@@ -50,6 +50,7 @@ export const AuthService = {
       email: userData.email || "",
       role: userData.role || "operator",
       profilePicture: userData.profilePicture || "",
+      rfid_uid: userData.rfid_uid || "",
     };
   },
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -17,6 +17,7 @@ export interface ModalFormData {
   password: string;
   confirmPassword?: string;
   role: "admin" | "operator" | "guest";
+  rfid_uid?: string;
 }
 
 export default function UserManagerModal({
@@ -30,6 +31,7 @@ export default function UserManagerModal({
     password: "",
     confirmPassword: "",
     role: editingUser?.role || "operator",
+    rfid_uid: editingUser?.rfid_uid || "",
   });
 
   const [formError, setFormError] = useState<string | null>(null);
@@ -71,6 +73,11 @@ export default function UserManagerModal({
 
     if (formData.password && formData.password !== formData.confirmPassword) {
       setFormError("Passwords do not match");
+      return false;
+    }
+
+    if (formData.role === "guest" && !formData.rfid_uid?.trim()) {
+      setFormError("RFID UID is required for guest users");
       return false;
     }
 
@@ -136,6 +143,56 @@ export default function UserManagerModal({
               />
             </div>
 
+            {/* Role Field */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase italic text-(--color-y2k-text-muted)">
+                Access_Role
+              </label>
+              {isEditMode ? (
+                <div className="w-full px-4 py-2 bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-border) text-(--color-y2k-purple) font-bold text-[11px] flex items-center">
+                  {formData.role.charAt(0).toUpperCase() +
+                    formData.role.slice(1)}
+                </div>
+              ) : (
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleInputChange}
+                  disabled={submitting || loading}
+                  aria-label="Access Role"
+                  title="Select user access role"
+                  className="w-full px-4 py-2 bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-border) text-(--color-y2k-lime) font-bold text-[11px] focus:border-(--color-y2k-purple) focus:outline-none disabled:opacity-50"
+                >
+                  <option value="guest">Guest</option>
+                  <option value="operator">Operator</option>
+                  <option value="admin">Admin</option>
+                </select>
+              )}
+            </div>
+
+            {/* RFID UID Field - Only shown for guest users */}
+            {(formData.role === "guest") && (
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase italic text-(--color-y2k-text-muted)">
+                  RFID_Card_ID
+                </label>
+                <input
+                  type="text"
+                  name="rfid_uid"
+                  value={formData.rfid_uid || ""}
+                  onChange={handleInputChange}
+                  disabled={submitting || loading || isEditMode}
+                  placeholder="e.g. 8B 36 D5 05"
+                  className="w-full px-4 py-2 bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-purple) text-(--color-y2k-lime) font-bold text-[11px] placeholder-gray-600 focus:border-(--color-y2k-lime) focus:outline-none disabled:opacity-50"
+                />
+                {isEditMode && (
+                  <p className="text-[9px] text-(--color-y2k-text-muted) italic">
+                    RFID Card ID cannot be changed after creation
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Password Field - Always shown in edit mode, required in create mode */}
             {!isEditMode || true ? (
               <>
@@ -180,33 +237,6 @@ export default function UserManagerModal({
                 </div>
               </>
             ) : null}
-
-            {/* Role Field */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase italic text-(--color-y2k-text-muted)">
-                Access_Role
-              </label>
-              {isEditMode ? (
-                <div className="w-full px-4 py-2 bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-border) text-(--color-y2k-purple) font-bold text-[11px] flex items-center">
-                  {formData.role.charAt(0).toUpperCase() +
-                    formData.role.slice(1)}
-                </div>
-              ) : (
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleInputChange}
-                  disabled={submitting || loading}
-                  aria-label="Access Role"
-                  title="Select user access role"
-                  className="w-full px-4 py-2 bg-(--color-y2k-bg-main) border-2 border-(--color-y2k-border) text-(--color-y2k-lime) font-bold text-[11px] focus:border-(--color-y2k-purple) focus:outline-none disabled:opacity-50"
-                >
-                  <option value="guest">Guest</option>
-                  <option value="operator">Operator</option>
-                  <option value="admin">Admin</option>
-                </select>
-              )}
-            </div>
 
             {/* Buttons */}
             <div className="flex gap-3 pt-2">
